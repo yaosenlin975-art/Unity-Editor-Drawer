@@ -1,0 +1,19 @@
+{
+  "name": "com.lin.editor-annotation",
+  "version": "0.2.0",
+  "displayName": "Lin Editor Annotation",
+  "description": "零外部依赖的编辑器注释工具：给资源、文件夹和场景物体加注释并显示在 Project/Hierarchy 里，从 .cs 源码头部注释提取脚本注释，并把这些样式设置收进一个配置页与主工具栏入口。",
+  "unity": "2022.3",
+  "dependencies": {},
+  "keywords": [
+    "editor",
+    "annotation",
+    "comment",
+    "project",
+    "hierarchy",
+    "toolbar"
+  ],
+  "author": {
+    "name": "Lin"
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Lin.Runtime.Annotation",
+    "rootNamespace": "Lin.Runtime.Annotation",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
