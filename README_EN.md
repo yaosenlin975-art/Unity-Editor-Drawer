@@ -33,7 +33,7 @@ The minimum supported Unity version is 2021.3. The package was compiled in Unity
 
 ### Asset and folder annotations
 
-In the Project window, select an asset or folder, right-click, and choose **Edit Annotation** (or **修改注释**). Enter a title, color, and description. In list view, the colored title appears to the right of the asset name; in icon grid view, it appears on a separate line above the name. Hover to read the description. Click the annotation to edit it; choose single- or double-click behavior in the settings page.
+In the Project window, select an asset or folder, right-click, and choose **Edit Annotation** (or **修改注释**). Enter a title, color, and description. In list view, the colored title appears to the right of the asset name and is aligned to the item's right edge; in icon grid view, it appears right-aligned on a separate line above the name. Hover to read the description. Click the annotation to edit it; choose single- or double-click behavior in the settings page.
 
 Annotations are **not stored in `.meta` files**. They are saved in the host project at `ProjectSettings/LinEditorAnnotation.json`:
 

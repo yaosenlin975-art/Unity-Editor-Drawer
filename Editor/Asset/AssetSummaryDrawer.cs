@@ -68,18 +68,17 @@ namespace Lin.Editor.Annotation.Asset
                 var style = new GUIStyle(EditorStyles.miniLabel);
                 style.normal.textColor = new Color(0.6f, 0.6f, 0.6f, 1f);
                 style.richText = true;
-                style.alignment = TextAnchor.MiddleLeft;
+                style.alignment = TextAnchor.MiddleRight;
 
                 // 计算文件名宽度
                 string description = descriptionMap[guid].description;
                 float fileNameWidth = EditorStyles.label.CalcSize(new GUIContent(fileName)).x;
 
-                // 列表视图整行很宽，注释放在名称右侧；图标视图每项很窄，改放名称上方一行。
+                // 列表视图整行很宽，注释放在名称右侧；图标视图在名称上方一行并贴齐资源项右边缘。
                 // ponytail: 按资源项宽度推断图标视图；Unity 没有公开的 ProjectBrowser 视图模式 API。
                 bool isGridView = selectionRect.width < EditorGUIUtility.currentViewWidth * 0.9f;
                 if (isGridView)
                 {
-                    style.alignment = TextAnchor.MiddleCenter;
                     float lineHeight = EditorGUIUtility.singleLineHeight;
                     float labelY = selectionRect.height > lineHeight * 2f
                         ? selectionRect.yMax - lineHeight * 2f
@@ -88,8 +87,10 @@ namespace Lin.Editor.Annotation.Asset
                 }
                 else
                 {
-                    labelRect.x = selectionRect.x + fileNameWidth + DISPLAY_OFFSET;
-                    labelRect.width = Mathf.Max(0f, selectionRect.xMax - labelRect.x);
+                    float nameEndX = selectionRect.x + fileNameWidth + DISPLAY_OFFSET;
+                    float availableWidth = Mathf.Max(0f, selectionRect.xMax - nameEndX - 5f);
+                    labelRect.width = Mathf.Min(style.CalcSize(new GUIContent(description)).x, availableWidth);
+                    labelRect.x = selectionRect.xMax - labelRect.width - 5f;
                 }
 
                 // 对象Tooltip

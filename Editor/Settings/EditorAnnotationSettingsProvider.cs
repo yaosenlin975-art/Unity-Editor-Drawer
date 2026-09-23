@@ -16,6 +16,7 @@ namespace Lin.Editor.Annotation.Settings
     {
         public const string PagePath = "Project/Lin Editor Annotation";
         private static SettingsProvider provider;
+        private static GUIStyle sizePreviewStyle;
 
         [SettingsProvider]
         public static SettingsProvider CreateProvider()
@@ -66,14 +67,16 @@ namespace Lin.Editor.Annotation.Settings
             GUILayout.EndHorizontal();
 
             Section(EditorAnnotationLocalization.Text(EAnnotationText.AssetSection));
-            changed |= IntField(nameof(EditorAnnotationSettings.AssetSummaryTitleSize), EditorAnnotationLocalization.Text(EAnnotationText.TitleSize),
-                EditorAnnotationSettings.AssetSummaryTitleSize, v => EditorAnnotationSettings.AssetSummaryTitleSize = v);
+            changed |= IntSliderField(nameof(EditorAnnotationSettings.AssetSummaryTitleSize), EditorAnnotationLocalization.Text(EAnnotationText.TitleSize),
+                EditorAnnotationSettings.AssetSummaryTitleSize, EditorAnnotationLocalization.Text(EAnnotationText.SizePreview),
+                v => EditorAnnotationSettings.AssetSummaryTitleSize = v);
             changed |= EnumField(nameof(EditorAnnotationSettings.AssetSummaryEditWay), EditorAnnotationLocalization.Text(EAnnotationText.EditOnClick),
                 EditorAnnotationSettings.AssetSummaryEditWay, v => EditorAnnotationSettings.AssetSummaryEditWay = v);
 
             Section(EditorAnnotationLocalization.Text(EAnnotationText.SceneSection));
-            changed |= IntField(nameof(EditorAnnotationSettings.SceneObjectDescriptionTitleSize), EditorAnnotationLocalization.Text(EAnnotationText.TitleSize),
-                EditorAnnotationSettings.SceneObjectDescriptionTitleSize, v => EditorAnnotationSettings.SceneObjectDescriptionTitleSize = v);
+            changed |= IntSliderField(nameof(EditorAnnotationSettings.SceneObjectDescriptionTitleSize), EditorAnnotationLocalization.Text(EAnnotationText.TitleSize),
+                EditorAnnotationSettings.SceneObjectDescriptionTitleSize, EditorAnnotationLocalization.Text(EAnnotationText.SizePreview),
+                v => EditorAnnotationSettings.SceneObjectDescriptionTitleSize = v);
             changed |= EnumField(nameof(EditorAnnotationSettings.SceneObjectDescriptionEditWay), EditorAnnotationLocalization.Text(EAnnotationText.EditOnClick),
                 EditorAnnotationSettings.SceneObjectDescriptionEditWay, v => EditorAnnotationSettings.SceneObjectDescriptionEditWay = v);
 
@@ -85,19 +88,7 @@ namespace Lin.Editor.Annotation.Settings
             changed |= BoolField(nameof(EditorAnnotationSettings.ScriptDescriptionItalic), EditorAnnotationLocalization.Text(EAnnotationText.Italic),
                 EditorAnnotationSettings.ScriptDescriptionItalic, v => EditorAnnotationSettings.ScriptDescriptionItalic = v);
 
-            // 一行一个标识；存进 EditorPrefs 时就是这段原始文本
-            EditorGUILayout.LabelField(new GUIContent(
-                EditorAnnotationLocalization.Text(EAnnotationText.DescriptionMarkers),
-                EditorAnnotationLocalization.Text(EAnnotationText.DescriptionMarkersTooltip)));
-            var edited = EditorGUILayout.TextArea(
-                EditorAnnotationSettings.DescriptionFiltersText,
-                EditorStyles.textArea,
-                GUILayout.MinHeight(54f));
-            if (edited != EditorAnnotationSettings.DescriptionFiltersText)
-            {
-                EditorAnnotationSettings.DescriptionFiltersText = edited;
-                changed = true;
-            }
+            changed |= DescriptionMarkersList();
 
             // Project 窗口的绘制结果带缓存，样式或标识变了要重扫；Hierarchy 每帧现读，不需要
             if (changed)
@@ -110,13 +101,67 @@ namespace Lin.Editor.Annotation.Settings
             EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
         }
 
-        private static bool IntField(string key, string label, int current, System.Action<int> apply)
+        private static bool IntSliderField(string key, string label, int current, string preview, System.Action<int> apply)
         {
-            var value = EditorGUILayout.IntField(new GUIContent(label, GetTooltip(key)), current);
-            value = Mathf.Clamp(value, 8, 32);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(new GUIContent(label, GetTooltip(key)), GUILayout.Width(EditorGUIUtility.labelWidth));
+            int value = Mathf.Clamp(Mathf.RoundToInt(GUILayout.HorizontalSlider(current, 8f, 32f)), 8, 32);
+            EditorGUILayout.LabelField(value.ToString(), EditorStyles.miniLabel, GUILayout.Width(24f));
+
+            if (sizePreviewStyle == null)
+            {
+                sizePreviewStyle = new GUIStyle(EditorStyles.label)
+                {
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            sizePreviewStyle.fontSize = value;
+            GUILayout.Label(preview, sizePreviewStyle, GUILayout.Width(90f), GUILayout.Height(Mathf.Max(EditorGUIUtility.singleLineHeight, value + 2f)));
+            EditorGUILayout.EndHorizontal();
+
             if (value == current) return false;
             apply(value);
             return true;
+        }
+
+        private static bool DescriptionMarkersList()
+        {
+            EditorGUILayout.LabelField(new GUIContent(
+                EditorAnnotationLocalization.Text(EAnnotationText.DescriptionMarkers),
+                EditorAnnotationLocalization.Text(EAnnotationText.DescriptionMarkersTooltip)));
+
+            var markers = new List<string>(EditorAnnotationSettings.DescriptionFiltersText.Split('\n'));
+            bool changed = false;
+            for (int i = 0; i < markers.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                string marker = EditorGUILayout.TextField(markers[i]);
+                if (marker != markers[i])
+                {
+                    markers[i] = marker;
+                    changed = true;
+                }
+
+                if (GUILayout.Button(EditorAnnotationLocalization.Text(EAnnotationText.RemoveMarker), GUILayout.Width(72f)))
+                {
+                    markers.RemoveAt(i);
+                    changed = true;
+                    i--;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (GUILayout.Button(EditorAnnotationLocalization.Text(EAnnotationText.AddMarker)))
+            {
+                markers.Add(string.Empty);
+                changed = true;
+            }
+
+            if (changed)
+                EditorAnnotationSettings.DescriptionFiltersText = string.Join("\n", markers);
+
+            return changed;
         }
 
         private static bool BoolField(string key, string label, bool current, System.Action<bool> apply)
@@ -177,6 +222,9 @@ namespace Lin.Editor.Annotation.Settings
         Italic,
         DescriptionMarkers,
         DescriptionMarkersTooltip,
+        AddMarker,
+        RemoveMarker,
+        SizePreview,
         PreferenceTooltip,
         ClickNone,
         ClickSingle,
@@ -220,6 +268,9 @@ namespace Lin.Editor.Annotation.Settings
                 { EAnnotationText.Italic, ("斜体", "Italic") },
                 { EAnnotationText.DescriptionMarkers, ("描述标识", "Description markers") },
                 { EAnnotationText.DescriptionMarkersTooltip, ("在 .cs 文件里识别描述行的前缀，一行一个", "Prefixes used to identify description lines in .cs files, one per line") },
+                { EAnnotationText.AddMarker, ("添加标识", "Add marker") },
+                { EAnnotationText.RemoveMarker, ("移除", "Remove") },
+                { EAnnotationText.SizePreview, ("注释", "Note") },
                 { EAnnotationText.PreferenceTooltip, ("存储于 EditorPrefs：{0}（本机本用户，不随工程进版本库）", "Stored in EditorPrefs: {0} (local to this user and machine; not stored with the project)") },
                 { EAnnotationText.ClickNone, ("无响应", "None") },
                 { EAnnotationText.ClickSingle, ("单击", "Single click") },
