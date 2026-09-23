@@ -60,7 +60,7 @@ namespace Lin.Editor.Annotation.Asset
                 {
                     // 新工程上这是正常首态，用 Log 而不是 LogWarning：Editor 对 warning 也印整段堆栈，
                     // 首次打开 Project 窗口时会被它刷一条看起来像异常的日志。
-                    Debug.Log("[Annotation] 未找到资源注释数据文件，将创建新的数据集");
+                    Debug.Log("[Lin Editor Drawer] 未找到资源注释数据文件，将创建新的数据集");
                     return;
                 }
 
@@ -166,17 +166,8 @@ namespace Lin.Editor.Annotation.Asset
             }
         }
 
-        [MenuItem("Lin/Editor Annotation/清除已删除资源的注释")]
-        private static void RemoveAllMissFileSummaryChinese() => RemoveDeletedAssetSummaries();
-
-        [MenuItem("Lin/Editor Annotation/Clear Deleted Asset Annotations")]
+        [MenuItem("Lin/Editor Drawer - 编辑器绘制/Clear Deleted Asset Annotations - 清除已删除资源的注释")]
         private static void RemoveAllMissFileSummaryEnglish() => RemoveDeletedAssetSummaries();
-
-        [MenuItem("Lin/Editor Annotation/清除已删除资源的注释", true)]
-        private static bool ValidateRemoveAllMissFileSummaryChinese() => !EditorAnnotationLocalization.IsEnglish;
-
-        [MenuItem("Lin/Editor Annotation/Clear Deleted Asset Annotations", true)]
-        private static bool ValidateRemoveAllMissFileSummaryEnglish() => EditorAnnotationLocalization.IsEnglish;
 
         private static void RemoveDeletedAssetSummaries()
         {
@@ -195,10 +186,10 @@ namespace Lin.Editor.Annotation.Asset
 
             self.Save();
             AssetSummaryDrawer.Refresh();
-            Debug.Log($"[Annotation] 已移除 {toRemove.Length} 条注释");
+            Debug.Log($"[Lin Editor Drawer] 已移除 {toRemove.Length} 条注释");
         }
 
-        private static void LogError(string message) => Debug.LogError($"[Annotation] {message}");
+        private static void LogError(string message) => Debug.LogError($"[Lin Editor Drawer] {message}");
     }
 
     internal static class AssetImporterAnnotationExtensions

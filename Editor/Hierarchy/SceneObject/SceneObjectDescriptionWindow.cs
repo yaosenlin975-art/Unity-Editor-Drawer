@@ -28,7 +28,7 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
         /// <summary>
         /// 根据当前选中的GameObject显示描述窗口
         /// </summary>
-        [MenuItem("GameObject/修改注释", false, 48)]
+        [MenuItem("GameObject/Edit Annotation - 修改注释", false, 48)]
         private static void ShowBySelect()
         {
             GameObject selectedObject = Selection.activeGameObject;
@@ -39,22 +39,6 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
 #endif
             ShowDescription(instanceId);
         }
-
-        [MenuItem("GameObject/Edit Annotation", false, 48)]
-        private static void ShowBySelectEnglish() => ShowBySelect();
-
-        /// <summary>
-        /// 验证ShowBySelect菜单项是否应该显示
-        /// </summary>
-        [MenuItem("GameObject/修改注释", true)]
-        private static bool ValidateShowBySelect()
-        {
-            return !EditorAnnotationLocalization.IsEnglish && Selection.activeGameObject != null;
-        }
-
-        [MenuItem("GameObject/Edit Annotation", true)]
-        private static bool ValidateShowBySelectEnglish() =>
-            EditorAnnotationLocalization.IsEnglish && Selection.activeGameObject != null;
 
         public static void ShowDescription(InstanceId instanceId)
         {
@@ -71,7 +55,7 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{AssetFolder}/SceneObjectDescriptionWindow.uxml");
             if (visualTree == null)
             {
-                Debug.LogError($"[Annotation] 找不到界面定义 {AssetFolder}/SceneObjectDescriptionWindow.uxml");
+                Debug.LogError($"[Lin Editor Drawer] 找不到界面定义 {AssetFolder}/SceneObjectDescriptionWindow.uxml");
                 return;
             }
 

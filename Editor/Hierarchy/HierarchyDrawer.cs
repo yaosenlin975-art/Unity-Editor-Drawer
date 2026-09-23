@@ -97,6 +97,6 @@ namespace Lin.Editor.Annotation.Hierarchy
             }
         }
 
-        private static void Error(string message) => UnityEngine.Debug.LogError($"[Annotation] {message}");
+        private static void Error(string message) => UnityEngine.Debug.LogError($"[Lin Editor Drawer] {message}");
     }
 }

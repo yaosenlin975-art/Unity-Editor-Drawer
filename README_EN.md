@@ -1,19 +1,19 @@
 [简体中文](README.md) | [English](README_EN.md)
 
-# Lin Editor Toolkit
+# Lin Editor Drawer
 
 A lightweight toolkit for Unity workflows across the Project window, Hierarchy, Scene View, Inspector, and main toolbar. It has no external package dependencies. The settings page and package-owned UI support Chinese and English.
 
-> Package Manager display name: **Lin Editor Toolkit**. The technical package ID and folder remain `com.lin.editor-annotation` for compatibility with existing manifests and local path references.
+> Package Manager display name: **Lin Editor Drawer**. The package ID and folder are `com.lin.editor-drawer`.
 
 ## Installation
 
-**Embedded package:** place the entire `com.lin.editor-annotation` folder under the target project's `Packages/` directory. Unity will detect it automatically.
+**Embedded package:** place the entire `com.lin.editor-drawer` folder under the target project's `Packages/` directory. Unity will detect it automatically.
 
 **Local package reference:** add this entry to `Packages/manifest.json`:
 
 ```json
-"com.lin.editor-annotation": "file:<path>/com.lin.editor-annotation"
+"com.lin.editor-drawer": "file:<path>/com.lin.editor-drawer"
 ```
 
 You can also use **Package Manager → Add package from git URL / disk**.
@@ -39,7 +39,7 @@ Annotations are **not stored in `.meta` files**. They are saved in the host proj
 
 - Adding an annotation does not dirty the asset importer or modify asset files.
 - The JSON file must be versioned with the project. It can become a merge-conflict hotspot in team workflows.
-- Remove entries for deleted assets from **Lin → Editor Annotation → Clear Deleted Asset Annotations** (or **清除已删除资源的注释**).
+- Remove entries for deleted assets from **Lin → Editor Drawer → Clear Deleted Asset Annotations** (or **清除已删除资源的注释**).
 
 ### Script annotations
 
@@ -91,7 +91,7 @@ public class SceneViewHints : MonoBehaviour
 
 ### Settings page
 
-Open **Project Settings → Lin Editor Annotation**. The page contains asset annotation, scene object annotation, and script annotation settings. Font size is limited to 8–32; changes refresh the Project window automatically.
+Open **Project Settings → Lin Editor Drawer**. The page contains asset annotation, scene object annotation, and script annotation settings. Font size is limited to 8–32; changes refresh the Project window automatically.
 
 Click **English** or **中文** at the top right to switch languages. The settings, annotation windows, built-in toolbar text, and package menu commands update immediately. The language choice is saved in local `EditorPrefs` and remains after Unity restarts. Native Unity menus retain both language entries: the active language is enabled and the other is disabled. Open annotation windows update their labels without changing the annotation text being edited.
 
@@ -182,7 +182,11 @@ To use package types from another assembly, add an explicit reference to the cor
 
 The two Scene View attributes keep the `Lin.Runtime.Attribute` namespace, but are now provided by the `Lin.Runtime.Annotation` assembly. Custom asmdefs that previously referenced the framework's `Lin.Runtime` assembly must add a reference to this package Runtime asmdef.
 
-## Compatibility
+## Rename compatibility
+
+The package ID changed from `com.lin.editor-annotation` to `com.lin.editor-drawer`; projects using the old ID in a manifest or local package path must switch to the new ID. To preserve existing code and data, the C# namespaces `Lin.Editor.Annotation.*`, assembly names `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`, the `com.lin.editor-annotation/` EditorPrefs prefix, and the annotation data file `ProjectSettings/LinEditorAnnotation.json` remain unchanged. No migration is needed for these identifiers.
+
+## Unity compatibility
 
 The package declares Unity 2021.3 as its minimum version and has been compiled in Unity 2021.3.45f2c1. Conditional code for Unity 6's main toolbar (`MainToolbarWindow`) and `EntityId` has not been compiled locally. Confirm those branches in a Unity 6 project before relying on them. Tuanjie 1.x should be validated against the target installation.
 

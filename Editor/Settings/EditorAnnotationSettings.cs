@@ -12,7 +12,7 @@ namespace Lin.Editor.Annotation.Settings
     public static class EditorAnnotationSettings
     {
         /// <summary>包内资产的加载路径前缀，与目录名绑定。</summary>
-        public const string PackagePath = "Packages/com.lin.editor-annotation";
+        public const string PackagePath = "Packages/com.lin.editor-drawer";
 
         /// <summary>两个注释窗口共用的样式表（两份原文件逐字节相同，故合一份）。</summary>
         public const string WindowStyleSheetPath = PackagePath + "/Editor/UI/AnnotationWindow.uss";

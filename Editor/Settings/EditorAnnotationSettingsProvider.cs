@@ -14,7 +14,7 @@ namespace Lin.Editor.Annotation.Settings
     /// </summary>
     internal static class EditorAnnotationSettingsProvider
     {
-        public const string PagePath = "Project/Lin Editor Annotation";
+        public const string PagePath = "Project/Lin Editor Drawer";
         private static SettingsProvider provider;
         private static GUIStyle sizePreviewStyle;
 
@@ -32,17 +32,8 @@ namespace Lin.Editor.Annotation.Settings
             return provider;
         }
 
-        [MenuItem("Lin/Editor Annotation/注释设置")]
-        private static void OpenFromChineseMenu() => OpenSettings();
-
-        [MenuItem("Lin/Editor Annotation/注释设置", true)]
-        private static bool ValidateChineseMenu() => !EditorAnnotationLocalization.IsEnglish;
-
-        [MenuItem("Lin/Editor Annotation/Annotation Settings")]
-        private static void OpenFromEnglishMenu() => OpenSettings();
-
-        [MenuItem("Lin/Editor Annotation/Annotation Settings", true)]
-        private static bool ValidateEnglishMenu() => EditorAnnotationLocalization.IsEnglish;
+        [MenuItem("Lin/Editor Drawer - 编辑器绘制/Annotation Settings - 设置界面")]
+        private static void OpenFromMenu() => OpenSettings();
 
         private static void OpenSettings() => SettingsService.OpenProjectSettings(PagePath);
 
@@ -256,7 +247,7 @@ namespace Lin.Editor.Annotation.Settings
         private static readonly Dictionary<EAnnotationText, (string chinese, string english)> Texts =
             new Dictionary<EAnnotationText, (string chinese, string english)>
             {
-                { EAnnotationText.SettingsPageLabel, ("Lin 编辑器注释", "Lin Editor Annotation") },
+                { EAnnotationText.SettingsPageLabel, ("Lin 编辑器绘制", "Lin Editor Drawer") },
                 { EAnnotationText.SwitchLanguage, ("English", "中文") },
                 { EAnnotationText.AssetSection, ("资源注释（Project 窗口）", "Asset annotations (Project window)") },
                 { EAnnotationText.TitleSize, ("注释字体大小", "Annotation font size") },

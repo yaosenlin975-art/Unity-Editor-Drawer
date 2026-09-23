@@ -25,7 +25,7 @@ namespace Lin.Editor.Annotation.Asset
         {
             if (string.IsNullOrEmpty(assetPath) || (!File.Exists(assetPath) && !Directory.Exists(assetPath)))
             {
-                Debug.LogError($"[Annotation] {assetPath} 资源不存在");
+                Debug.LogError($"[Lin Editor Drawer] {assetPath} 资源不存在");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace Lin.Editor.Annotation.Asset
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{AssetFolder}/AssetSummaryWindow.uxml");
             if (visualTree == null)
             {
-                Debug.LogError($"[Annotation] 找不到界面定义 {AssetFolder}/AssetSummaryWindow.uxml");
+                Debug.LogError($"[Lin Editor Drawer] 找不到界面定义 {AssetFolder}/AssetSummaryWindow.uxml");
                 return;
             }
 

@@ -1,19 +1,19 @@
 [简体中文](README.md) | [English](README_EN.md)
 
-# Lin Editor Toolkit
+# Lin Editor Drawer
 
 面向 Unity 工作流的轻量编辑器工具集，覆盖 Project、Hierarchy、SceneView、Inspector 和主工具栏。无外部包依赖，设置页及包自带界面支持中英文切换。
 
-> Package Manager 展示名：**Lin Editor Toolkit**。技术包 ID 与目录暂保留为 `com.lin.editor-annotation`，以兼容现有 manifest 和本地路径引用。
+> Package Manager 展示名：**Lin Editor Drawer**。包 ID 与目录均为 `com.lin.editor-drawer`。
 
 ## 安装
 
-**内嵌**：把 `com.lin.editor-annotation` 整个目录放进目标工程的 `Packages/`，Unity 自动识别。
+**内嵌**：把 `com.lin.editor-drawer` 整个目录放进目标工程的 `Packages/`，Unity 自动识别。
 
 **外部引用**：`Packages/manifest.json` 里加一条
 
 ```json
-"com.lin.editor-annotation": "file:<路径>/com.lin.editor-annotation"
+"com.lin.editor-drawer": "file:<路径>/com.lin.editor-drawer"
 ```
 
 或在 Package Manager 里 *Add package from git URL / disk*。
@@ -39,7 +39,7 @@
 
 - 加注释不会让资源导入器变脏，不会污染版本库里的资产文件；
 - 代价是这个 JSON 得跟着版本库走，多人协作时它会成为冲突热点；
-- 清理已删除资源留下的条目：**Lin → Editor Annotation → 清除已删除资源的注释 / Clear Deleted Asset Annotations**。
+- 清理已删除资源留下的条目：**Lin → Editor Drawer → 清除已删除资源的注释 / Clear Deleted Asset Annotations**。
 
 ### 脚本注释
 
@@ -91,7 +91,7 @@ public class SceneViewHints : MonoBehaviour
 
 ### 配置页
 
-**Project Settings → Lin Editor Annotation**，三段：资源注释、场景物体注释、脚本注释。字号限定 8–32；改动会自动重绘 Project 窗口。
+**Project Settings → Lin Editor Drawer**，三段：资源注释、场景物体注释、脚本注释。字号限定 8–32；改动会自动重绘 Project 窗口。
 
 所有值存 `EditorPrefs`（key 前缀 `com.lin.editor-annotation/`），即**本机本用户**偏好，不进版本库、不随工程共享。
 
@@ -184,7 +184,11 @@ public class PlayerController : MonoBehaviour { }
 
 Scene GUI 两个 Attribute 保留 `Lin.Runtime.Attribute` 命名空间，但现在由 `Lin.Runtime.Annotation` 程序集提供。原本显式依赖框架 `Lin.Runtime` 的自定义 asmdef 需要添加对此 package Runtime asmdef 的引用。
 
-## 兼容性说明
+## 改名与兼容性说明
+
+本次将包 ID 从 `com.lin.editor-annotation` 改为 `com.lin.editor-drawer`。安装路径或 manifest 使用旧 ID 的工程需要改用新 ID。为保留现有代码和数据，C# 命名空间 `Lin.Editor.Annotation.*`、程序集名 `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`、EditorPrefs 前缀 `com.lin.editor-annotation/` 及注释数据文件 `ProjectSettings/LinEditorAnnotation.json` 均继续沿用旧标识，无需迁移。
+
+## Unity 版本兼容性
 
 代码保留了 Unity 6 的主工具栏（`MainToolbarWindow`）与 `EntityId` 分支。**该分支未在本地编译验证**——验证用的引用集来自团结 1.10.0（2022.3.62t12 基线），其中不存在 `UnityEngine.EntityId`。装进 Unity 6 工程前请自行确认这两个分支。
 

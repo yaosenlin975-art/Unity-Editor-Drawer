@@ -31,27 +31,12 @@ namespace Lin.Editor.Annotation.Asset
             EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemOnGUI;
         }
 
-        [MenuItem("Assets/修改注释")]
-        private static void SetAssetDescriptionChinese() => SetAssetDescription();
-
-        [MenuItem("Assets/Edit Annotation")]
-        private static void SetAssetDescriptionEnglish() => SetAssetDescription();
-
+        [MenuItem("Assets/Edit Annotation - 修改注释")]
         private static void SetAssetDescription()
         {
             var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
             AssetSummaryWindow.ShowAssetSummary(assetPath);
         }
-
-        [MenuItem("Assets/修改注释", validate = true)]
-        private static bool SetAssetDescriptionValidateChinese()
-        {
-            return !EditorAnnotationLocalization.IsEnglish && Selection.activeObject != null;
-        }
-
-        [MenuItem("Assets/Edit Annotation", validate = true)]
-        private static bool SetAssetDescriptionValidateEnglish() =>
-            EditorAnnotationLocalization.IsEnglish && Selection.activeObject != null;
 
         private static void OnProjectWindowItemOnGUI(string guid, Rect selectionRect)
         {
