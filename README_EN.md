@@ -25,6 +25,7 @@ The minimum supported Unity version is 2021.3. The package was compiled in Unity
 | Asset and folder annotations | To the right of names in the Project window list view |
 | Script annotations | Project window; extracted from `.cs` source comments |
 | Scene object annotations | Inline in Hierarchy rows |
+| Scene View attributes | Scene View panel and drawing callbacks for selected components and static members |
 | Settings and language toggle | Project Settings → Lin Editor Annotation |
 | Settings shortcut | “Note” button on the right side of the main toolbar |
 | Unity menu commands | Chinese and English entries; only the current language is enabled |
@@ -56,6 +57,37 @@ The search scans the **entire file** and uses the first matching line; it is not
 ### Scene object annotations
 
 Select an object in the Hierarchy, right-click, and choose **Edit Annotation** (or **修改注释**) from the GameObject menu. Data is stored in a `Description` component on the object and is saved with the scene. The component uses `HideFlags.DontSaveInBuild | HideFlags.HideInInspector`, so it is hidden in the Inspector and stripped from builds.
+
+### Scene View attributes
+
+Use `ShowInSceneGUI` and `DrawInSceneGUI` on static members or members of `MonoBehaviour` components on the selected object and its children:
+
+```csharp
+using Lin.Runtime.Attribute;
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+public class SceneViewHints : MonoBehaviour
+{
+    [ShowInSceneGUI]
+    [SerializeField] private Vector3 point;
+
+    [ShowInSceneGUI]
+    private void ResetPoint() => point = transform.position;
+
+    [DrawInSceneGUI]
+    private void DrawHint()
+    {
+#if UNITY_EDITOR
+        Handles.Label(transform.position, point.ToString());
+#endif
+    }
+}
+```
+
+`ShowInSceneGUI` supports fields, properties, and parameterless methods. Fields and properties display their current values; methods appear as buttons. Values are read on every Scene View GUI event, so property getters should be fast and side-effect free. `DrawInSceneGUI` must mark a parameterless method and runs for each Scene View GUI event (`void` is recommended). The package preserves IMGUI and Handles layout and interaction events, so keep these callbacks lightweight. Instance members come from the selected object and its children, including inactive objects; static members are shown globally. The static section label follows the package language.
 
 ### Settings page
 
@@ -143,10 +175,12 @@ Choose **Rename GameObject** (or **修改GameObject的名字**) from that compon
 
 | Assembly definition | Platforms | Contents |
 |---|---|---|
-| `Lin.Runtime.Annotation` | All | `Description`, `NameAttribute` |
-| `Lin.Editor.Annotation` | Editor only | All other package functionality |
+| `Lin.Runtime.Annotation` | All | `Description`, `NameAttribute`, `ShowInSceneGUIAttribute`, `DrawInSceneGUIAttribute` |
+| `Lin.Editor.Annotation` | Editor only | Scene View attribute drawer and other editor functionality |
 
 To use package types from another assembly, add an explicit reference to the corresponding asmdef. `autoReferenced` is `true`, so the default `Assembly-CSharp` assembly can see the types.
+
+The two Scene View attributes keep the `Lin.Runtime.Attribute` namespace, but are now provided by the `Lin.Runtime.Annotation` assembly. Custom asmdefs that previously referenced the framework's `Lin.Runtime` assembly must add a reference to this package Runtime asmdef.
 
 ## Compatibility
 

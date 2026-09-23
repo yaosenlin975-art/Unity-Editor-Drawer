@@ -25,6 +25,7 @@
 | 资源/文件夹注释 | Project 窗口列表视图，名字右侧 |
 | 脚本注释 | 同上，从 `.cs` 源码注释里提取 |
 | 场景物体注释 | Hierarchy 行内 |
+| SceneView 标注特性 | 选中物体组件及静态成员的 SceneView 面板与绘制回调 |
 | 注释样式配置与语言切换 | Project Settings → Lin Editor Annotation |
 | 配置页快捷入口 | 主工具栏右侧「注释」/“Note”按钮 |
 | Unity 菜单 | 菜单项提供中英文两项，当前语言项启用、另一项置灰 |
@@ -56,6 +57,37 @@ public class CameraFollow : MonoBehaviour { }
 ### 场景物体注释
 
 Hierarchy 里选中物体 → 右键 **修改注释**（GameObject 菜单下）。数据存在该物体上的 `Description` 组件里，随场景保存、切场景不残留；`Description` 设了 `HideFlags.DontSaveInBuild`，不进构建产物。
+
+### SceneView 标注特性
+
+在静态成员或当前选中物体及其子物体的 `MonoBehaviour` 成员上使用 `ShowInSceneGUI` 和 `DrawInSceneGUI`：
+
+```csharp
+using Lin.Runtime.Attribute;
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+public class SceneViewHints : MonoBehaviour
+{
+    [ShowInSceneGUI]
+    [SerializeField] private Vector3 point;
+
+    [ShowInSceneGUI]
+    private void ResetPoint() => point = transform.position;
+
+    [DrawInSceneGUI]
+    private void DrawHint()
+    {
+#if UNITY_EDITOR
+        Handles.Label(transform.position, point.ToString());
+#endif
+    }
+}
+```
+
+`ShowInSceneGUI` 支持字段、属性和无参方法：字段/属性显示当前值，无参方法显示为按钮。值会随每次 SceneView GUI 事件读取，属性 getter 应保持快速且无副作用。`DrawInSceneGUI` 标注无参方法，并在每次 SceneView GUI 事件调用（推荐返回 `void`）；保留 IMGUI/Handles 的布局与交互事件，因此回调应保持轻量。实例成员来自当前选中物体及其子物体（包含 inactive），静态成员会全局显示；静态分组标题随插件语言切换。
 
 ### 配置页
 
@@ -145,10 +177,12 @@ public class PlayerController : MonoBehaviour { }
 
 | asmdef 名 | 平台 | 内容 |
 |---|---|---|
-| `Lin.Runtime.Annotation` | 全平台 | `Description`、`NameAttribute` |
-| `Lin.Editor.Annotation` | 仅编辑器 | 其余全部 |
+| `Lin.Runtime.Annotation` | 全平台 | `Description`、`NameAttribute`、`ShowInSceneGUIAttribute`、`DrawInSceneGUIAttribute` |
+| `Lin.Editor.Annotation` | 仅编辑器 | SceneView 标注绘制器及其余全部编辑器功能 |
 
 要在别的程序集里使用本包的类型，需要在该 asmdef 中显式引用对应 asmdef；`autoReferenced` 为 `true`，故 Assembly-CSharp 默认可见。
+
+Scene GUI 两个 Attribute 保留 `Lin.Runtime.Attribute` 命名空间，但现在由 `Lin.Runtime.Annotation` 程序集提供。原本显式依赖框架 `Lin.Runtime` 的自定义 asmdef 需要添加对此 package Runtime asmdef 的引用。
 
 ## 兼容性说明
 
