@@ -68,6 +68,7 @@ namespace Lin.Editor.Annotation.Asset
                 var style = new GUIStyle(EditorStyles.miniLabel);
                 style.normal.textColor = new Color(0.6f, 0.6f, 0.6f, 1f);
                 style.richText = true;
+                style.fontSize = EditorAnnotationSettings.AssetSummaryTitleSize;
                 style.alignment = TextAnchor.MiddleRight;
 
                 // 计算文件名宽度
