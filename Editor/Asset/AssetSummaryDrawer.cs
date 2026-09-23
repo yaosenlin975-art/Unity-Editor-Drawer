@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Lin.Editor.Annotation.Asset
 {
     /// <summary>
-    /// 在 Project 窗口的列表视图里，把资源/文件夹注释画在名字右边；.cs 文件额外从源码头部注释里提取一行作为脚本注释。
+    /// 在 Project 窗口绘制资源/文件夹注释；.cs 文件额外从源码头部注释里提取一行作为脚本注释。
     /// </summary>
     [InitializeOnLoad]
     public static class AssetSummaryDrawer
@@ -74,9 +74,23 @@ namespace Lin.Editor.Annotation.Asset
                 string description = descriptionMap[guid].description;
                 float fileNameWidth = EditorStyles.label.CalcSize(new GUIContent(fileName)).x;
 
-                // 计算注释的显示位置
-                labelRect.x = selectionRect.x + fileNameWidth + DISPLAY_OFFSET;
-                labelRect.width = selectionRect.width - labelRect.x;
+                // 列表视图整行很宽，注释放在名称右侧；图标视图每项很窄，改放名称上方一行。
+                // ponytail: 按资源项宽度推断图标视图；Unity 没有公开的 ProjectBrowser 视图模式 API。
+                bool isGridView = selectionRect.width < EditorGUIUtility.currentViewWidth * 0.9f;
+                if (isGridView)
+                {
+                    style.alignment = TextAnchor.MiddleCenter;
+                    float lineHeight = EditorGUIUtility.singleLineHeight;
+                    float labelY = selectionRect.height > lineHeight * 2f
+                        ? selectionRect.yMax - lineHeight * 2f
+                        : selectionRect.yMax + 2f;
+                    labelRect = new Rect(selectionRect.x + 2f, labelY, Mathf.Max(0f, selectionRect.width - 4f), lineHeight);
+                }
+                else
+                {
+                    labelRect.x = selectionRect.x + fileNameWidth + DISPLAY_OFFSET;
+                    labelRect.width = Mathf.Max(0f, selectionRect.xMax - labelRect.x);
+                }
 
                 // 对象Tooltip
                 var content = new GUIContent(description);

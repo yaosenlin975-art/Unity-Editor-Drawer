@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- 修复：Project 窗口放大图标后，资源注释因仍按列表行计算坐标而被裁切；图标网格改在名称附近单独显示注释。
+
 ## 0.2.0 (2026-09-22)
 
 **改名**：`com.lin.editor-toolbox` → `com.lin.editor-annotation`，命名空间 → `Lin.Editor.Annotation.*`。旧版本未被任何工程引用，无迁移成本。
