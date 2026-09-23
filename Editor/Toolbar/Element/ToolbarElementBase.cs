@@ -1,4 +1,5 @@
 using UnityEditor;
+using Lin.Editor.Annotation.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -21,6 +22,11 @@ namespace Lin.Editor.Annotation.Toolbar.Element
             icon = LoadIcon(toolbarElementAttribute.iconPathOrLabel);
             label = toolbarElementAttribute.iconPathOrLabel;
             tooltip = toolbarElementAttribute.tooltip;
+            if (label == "注释" && tooltip == "打开注释设置")
+            {
+                label = EditorAnnotationLocalization.Text(EAnnotationText.ToolbarAnnotation);
+                tooltip = EditorAnnotationLocalization.Text(EAnnotationText.ToolbarAnnotationTooltip);
+            }
         }
 
         /// <summary>

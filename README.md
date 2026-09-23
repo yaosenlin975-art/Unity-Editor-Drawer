@@ -1,6 +1,8 @@
+[简体中文](README.md) | [English](README_EN.md)
+
 # Lin Editor Annotation
 
-零外部依赖的编辑器注释工具。`package.json` 的 `dependencies` 为空对象，可安装进任意 Unity / 团结工程。
+零外部依赖的编辑器注释工具。`package.json` 的 `dependencies` 为空对象，可安装进 Unity 工程。设置页支持中英文切换。
 
 ## 安装
 
@@ -14,7 +16,7 @@
 
 或在 Package Manager 里 *Add package from git URL / disk*。
 
-要求 Unity 2022.3 或更高（团结 1.x 亦可）。
+最低要求 Unity 2021.3。本包已在 Unity 2021.3.45f2c1 编译验证；Unity 6 与团结 1.x 请按目标版本自行验证。
 
 ## 包含什么
 
@@ -23,9 +25,10 @@
 | 资源/文件夹注释 | Project 窗口列表视图，名字右侧 |
 | 脚本注释 | 同上，从 `.cs` 源码注释里提取 |
 | 场景物体注释 | Hierarchy 行内 |
-| 注释样式配置 | Project Settings → Lin Editor Annotation |
-| 配置页快捷入口 | 主工具栏右侧「注释」按钮 |
-| 按类名重命名 GameObject | 组件右键菜单 |
+| 注释样式配置与语言切换 | Project Settings → Lin Editor Annotation |
+| 配置页快捷入口 | 主工具栏右侧「注释」/“Note”按钮 |
+| Unity 菜单 | 菜单项提供中英文两项，当前语言项启用、另一项置灰 |
+| 按类名重命名 GameObject | Inspector 组件右键菜单 |
 
 ### 资源与文件夹注释
 
@@ -35,7 +38,7 @@
 
 - 加注释不会让资源导入器变脏，不会污染版本库里的资产文件；
 - 代价是这个 JSON 得跟着版本库走，多人协作时它会成为冲突热点；
-- 清理已删除资源留下的条目：**Tools → Lin Editor Annotation → 清除已删除资源的注释**。
+- 清理已删除资源留下的条目：**Lin → Editor Annotation → 清除已删除资源的注释 / Clear Deleted Asset Annotations**。
 
 ### 脚本注释
 
@@ -130,7 +133,13 @@ using Lin.Editor.Annotation;
 public class PlayerController : MonoBehaviour { }
 ```
 
-之后在该组件的右键菜单里选 **修改GameObject的名字**，物体名字改成特性里的值（未标特性则改成类名）。`NameAttribute` 位于 Runtime 程序集，因为使用方要把它标在自己的运行时脚本上。
+之后在该组件的右键菜单里选 **修改GameObject的名字 / Rename GameObject**，物体名字改成特性里的值（未标特性则改成类名）。`NameAttribute` 位于 Runtime 程序集，因为使用方要把它标在自己的运行时脚本上。
+
+### 中英文界面
+
+在设置页右上角点击 **English** 或 **中文**。设置项、注释窗口、包自带工具栏文字和菜单项会切换语言，语言选择保存在本机 `EditorPrefs`，重启 Unity 后仍然保留。菜单会同时显示中英文项，当前语言项可用、另一项置灰。已打开的注释窗口会即时更新文字，正在编辑的注释内容不会被改写。
+
+通过 `ToolbarButtonAttribute` 等扩展接口注册的使用方自定义按钮由使用方提供文字，不会被本包自动翻译。
 
 ## 程序集
 

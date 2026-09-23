@@ -40,18 +40,26 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
             ShowDescription(instanceId);
         }
 
+        [MenuItem("GameObject/Edit Annotation", false, 48)]
+        private static void ShowBySelectEnglish() => ShowBySelect();
+
         /// <summary>
         /// 验证ShowBySelect菜单项是否应该显示
         /// </summary>
         [MenuItem("GameObject/修改注释", true)]
         private static bool ValidateShowBySelect()
         {
-            return Selection.activeGameObject != null;
+            return !EditorAnnotationLocalization.IsEnglish && Selection.activeGameObject != null;
         }
+
+        [MenuItem("GameObject/Edit Annotation", true)]
+        private static bool ValidateShowBySelectEnglish() =>
+            EditorAnnotationLocalization.IsEnglish && Selection.activeGameObject != null;
 
         public static void ShowDescription(InstanceId instanceId)
         {
-            SceneObjectDescriptionWindow wnd = GetWindow<SceneObjectDescriptionWindow>(true, "场景物体注释", true);
+            SceneObjectDescriptionWindow wnd = GetWindow<SceneObjectDescriptionWindow>(true,
+                EditorAnnotationLocalization.Text(EAnnotationText.SceneWindowTitle), true);
             wnd.minSize = new Vector2(400, 500);
             wnd.maxSize = new Vector2(600, 700);
             wnd.LoadExistingComment(instanceId);
@@ -63,7 +71,7 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{AssetFolder}/SceneObjectDescriptionWindow.uxml");
             if (visualTree == null)
             {
-                Debug.LogError($"[Lin Editor Annotation] 找不到界面定义 {AssetFolder}/SceneObjectDescriptionWindow.uxml");
+                Debug.LogError($"[Annotation] 找不到界面定义 {AssetFolder}/SceneObjectDescriptionWindow.uxml");
                 return;
             }
 
@@ -76,6 +84,8 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
             descriptionField = rootVisualElement.Q<TextField>("ToolTipField");
             previewLabel = rootVisualElement.Q<Label>("previewLabel");
             targetField = rootVisualElement.Q<ObjectField>("CurrentObjectField");
+
+            ApplyLocalization();
 
             var tooltipField = descriptionField.Q("unity-text-input");
             // 设置描述字段的最小高度为100像素
@@ -91,6 +101,42 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
 
             // 绑定事件
             BindEvents(saveButton, cancelButton, deleteButton);
+        }
+
+        private void OnEnable()
+        {
+            EditorAnnotationLocalization.LanguageChanged -= OnLanguageChanged;
+            EditorAnnotationLocalization.LanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnDisable()
+        {
+            EditorAnnotationLocalization.LanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged() => ApplyLocalization();
+
+        private void ApplyLocalization()
+        {
+            if (rootVisualElement == null || titleColorField == null)
+                return;
+
+            titleContent = new GUIContent(EditorAnnotationLocalization.Text(EAnnotationText.SceneWindowTitle));
+            targetField.label = EditorAnnotationLocalization.Text(EAnnotationText.Target);
+            titleColorField.label = EditorAnnotationLocalization.Text(EAnnotationText.Color);
+            titleField.label = EditorAnnotationLocalization.Text(EAnnotationText.Title);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "WindowTitle", EAnnotationText.SceneWindowTitle);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "DescriptionLabel", EAnnotationText.Description);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichTextGuide", EAnnotationText.RichTextGuide);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichBoldExample", EAnnotationText.RichBoldExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichItalicExample", EAnnotationText.RichItalicExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichSizeExample", EAnnotationText.RichSizeExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichColorExample", EAnnotationText.RichColorExample);
+            rootVisualElement.Q<Button>("SaveButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Save);
+            rootVisualElement.Q<Button>("CancelButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Cancel);
+            rootVisualElement.Q<Button>("DeleteButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Delete);
+            rootVisualElement.Q<Foldout>("PreviewFoldout").text = EditorAnnotationLocalization.Text(EAnnotationText.Preview);
+            UpdatePreview();
         }
 
         /// <summary>
@@ -159,7 +205,9 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
                 previewText += description;
             }
 
-            previewLabel.text = string.IsNullOrEmpty(previewText) ? "预览将在这里显示..." : previewText;
+            previewLabel.text = string.IsNullOrEmpty(previewText)
+                ? EditorAnnotationLocalization.Text(EAnnotationText.EmptyPreview)
+                : previewText;
         }
 
         /// <summary>

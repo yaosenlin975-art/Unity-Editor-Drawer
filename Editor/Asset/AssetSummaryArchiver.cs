@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Lin.Editor.Annotation.Settings;
 using UnityEditor;
 using UnityEngine;
 
@@ -59,7 +60,7 @@ namespace Lin.Editor.Annotation.Asset
                 {
                     // 新工程上这是正常首态，用 Log 而不是 LogWarning：Editor 对 warning 也印整段堆栈，
                     // 首次打开 Project 窗口时会被它刷一条看起来像异常的日志。
-                    Debug.Log("[Lin Editor Annotation] 未找到资源注释数据文件，将创建新的数据集");
+                    Debug.Log("[Annotation] 未找到资源注释数据文件，将创建新的数据集");
                     return;
                 }
 
@@ -165,8 +166,19 @@ namespace Lin.Editor.Annotation.Asset
             }
         }
 
-        [MenuItem("Tools/Lin Editor Annotation/清除已删除资源的注释")]
-        private static void RemoveAllMissFileSummary()
+        [MenuItem("Lin/Editor Annotation/清除已删除资源的注释")]
+        private static void RemoveAllMissFileSummaryChinese() => RemoveDeletedAssetSummaries();
+
+        [MenuItem("Lin/Editor Annotation/Clear Deleted Asset Annotations")]
+        private static void RemoveAllMissFileSummaryEnglish() => RemoveDeletedAssetSummaries();
+
+        [MenuItem("Lin/Editor Annotation/清除已删除资源的注释", true)]
+        private static bool ValidateRemoveAllMissFileSummaryChinese() => !EditorAnnotationLocalization.IsEnglish;
+
+        [MenuItem("Lin/Editor Annotation/Clear Deleted Asset Annotations", true)]
+        private static bool ValidateRemoveAllMissFileSummaryEnglish() => EditorAnnotationLocalization.IsEnglish;
+
+        private static void RemoveDeletedAssetSummaries()
         {
             var self = GetInstance();
             // 必须同时判目录：File.Exists 对文件夹恒为 false，只判文件会把打在文件夹上的注释整体删掉
@@ -183,10 +195,10 @@ namespace Lin.Editor.Annotation.Asset
 
             self.Save();
             AssetSummaryDrawer.Refresh();
-            Debug.Log($"[Lin Editor Annotation] 已移除 {toRemove.Length} 条注释");
+            Debug.Log($"[Annotation] 已移除 {toRemove.Length} 条注释");
         }
 
-        private static void LogError(string message) => Debug.LogError($"[Lin Editor Annotation] {message}");
+        private static void LogError(string message) => Debug.LogError($"[Annotation] {message}");
     }
 
     internal static class AssetImporterAnnotationExtensions

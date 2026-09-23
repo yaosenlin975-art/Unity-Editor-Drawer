@@ -22,6 +22,17 @@ namespace Lin.Editor.Annotation.Toolbar
         static ToolbarElements()
         {
             EditorApplication.update += OnUpdate;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EditorAnnotationLocalization.LanguageChanged += Refresh;
+        }
+
+        private static void Refresh()
+        {
+            ToolbarRoot.leftAlign?.Clear();
+            ToolbarRoot.middleAlign?.Clear();
+            ToolbarRoot.rightAlign?.Clear();
+            EditorApplication.update -= OnUpdate;
+            EditorApplication.update += OnUpdate;
         }
 
         private static void OnUpdate()
@@ -213,9 +224,6 @@ namespace Lin.Editor.Annotation.Toolbar
                 }
             }
 
-            // 注册播放模式变化事件，以便在运行模式变化时更新元素可见性
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-
             EditorApplication.update -= OnUpdate;
         }
 
@@ -228,24 +236,7 @@ namespace Lin.Editor.Annotation.Toolbar
             // 只在进入或退出播放模式时重新构建工具栏
             if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.EnteredEditMode)
             {
-                // 清空现有的工具栏元素
-                ToolbarRoot.leftAlign.Clear();
-                ToolbarRoot.middleAlign.Clear();
-                ToolbarRoot.rightAlign.Clear();
-
-                // 重新构建工具栏
-                EditorApplication.delayCall += () =>
-                {
-                    // 使用静态构造函数重新初始化工具栏
-                    var constructorInfo = typeof(ToolbarElements).GetConstructor(
-                        BindingFlags.Static | BindingFlags.NonPublic,
-                        null, Type.EmptyTypes, null);
-
-                    if (constructorInfo != null)
-                        constructorInfo.Invoke(null, null);
-                    else
-                        UnityEngine.Debug.LogError("无法找到ToolbarElements的静态构造函数");
-                };
+                Refresh();
             }
         }
     }

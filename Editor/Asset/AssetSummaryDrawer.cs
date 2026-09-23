@@ -32,6 +32,11 @@ namespace Lin.Editor.Annotation.Asset
         }
 
         [MenuItem("Assets/修改注释")]
+        private static void SetAssetDescriptionChinese() => SetAssetDescription();
+
+        [MenuItem("Assets/Edit Annotation")]
+        private static void SetAssetDescriptionEnglish() => SetAssetDescription();
+
         private static void SetAssetDescription()
         {
             var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -39,10 +44,14 @@ namespace Lin.Editor.Annotation.Asset
         }
 
         [MenuItem("Assets/修改注释", validate = true)]
-        private static bool SetAssetDescriptionValidate()
+        private static bool SetAssetDescriptionValidateChinese()
         {
-            return Selection.activeObject != null;
+            return !EditorAnnotationLocalization.IsEnglish && Selection.activeObject != null;
         }
+
+        [MenuItem("Assets/Edit Annotation", validate = true)]
+        private static bool SetAssetDescriptionValidateEnglish() =>
+            EditorAnnotationLocalization.IsEnglish && Selection.activeObject != null;
 
         private static void OnProjectWindowItemOnGUI(string guid, Rect selectionRect)
         {

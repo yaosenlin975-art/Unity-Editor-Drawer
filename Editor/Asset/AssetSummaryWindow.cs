@@ -25,11 +25,12 @@ namespace Lin.Editor.Annotation.Asset
         {
             if (string.IsNullOrEmpty(assetPath) || (!File.Exists(assetPath) && !Directory.Exists(assetPath)))
             {
-                Debug.LogError($"[Lin Editor Annotation] {assetPath} 资源不存在");
+                Debug.LogError($"[Annotation] {assetPath} 资源不存在");
                 return;
             }
 
-            AssetSummaryWindow wnd = GetWindow<AssetSummaryWindow>(true, "文件注释", true);
+            AssetSummaryWindow wnd = GetWindow<AssetSummaryWindow>(true,
+                EditorAnnotationLocalization.Text(EAnnotationText.AssetWindowTitle), true);
             wnd.minSize = new Vector2(400, 500);
             wnd.maxSize = new Vector2(600, 700);
             wnd.assetPath = assetPath;
@@ -42,7 +43,7 @@ namespace Lin.Editor.Annotation.Asset
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{AssetFolder}/AssetSummaryWindow.uxml");
             if (visualTree == null)
             {
-                Debug.LogError($"[Lin Editor Annotation] 找不到界面定义 {AssetFolder}/AssetSummaryWindow.uxml");
+                Debug.LogError($"[Annotation] 找不到界面定义 {AssetFolder}/AssetSummaryWindow.uxml");
                 return;
             }
 
@@ -56,6 +57,8 @@ namespace Lin.Editor.Annotation.Asset
             descriptionField = rootVisualElement.Q<TextField>("ToolTipField");
             previewLabel = rootVisualElement.Q<Label>("previewLabel");
 
+            ApplyLocalization();
+
             var tooltipField = descriptionField.Q("unity-text-input");
             // 设置描述字段的最小高度为100像素
             if (tooltipField != null)
@@ -65,6 +68,43 @@ namespace Lin.Editor.Annotation.Asset
 
             // 绑定事件
             BindEvents();
+        }
+
+        private void OnEnable()
+        {
+            EditorAnnotationLocalization.LanguageChanged -= OnLanguageChanged;
+            EditorAnnotationLocalization.LanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnDisable()
+        {
+            EditorAnnotationLocalization.LanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged() => ApplyLocalization();
+
+        private void ApplyLocalization()
+        {
+            if (rootVisualElement == null || currentObjectField == null)
+                return;
+
+            titleContent = new GUIContent(EditorAnnotationLocalization.Text(EAnnotationText.AssetWindowTitle));
+            currentObjectField.label = EditorAnnotationLocalization.Text(EAnnotationText.Target);
+            titleColorField.label = EditorAnnotationLocalization.Text(EAnnotationText.Color);
+            titleField.label = EditorAnnotationLocalization.Text(EAnnotationText.Title);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "WindowTitle", EAnnotationText.AssetWindowTitle);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "DescriptionLabel", EAnnotationText.Description);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichTextGuide", EAnnotationText.RichTextGuide);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichBoldExample", EAnnotationText.RichBoldExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichItalicExample", EAnnotationText.RichItalicExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichSizeExample", EAnnotationText.RichSizeExample);
+            EditorAnnotationLocalization.SetLabel(rootVisualElement, "RichColorExample", EAnnotationText.RichColorExample);
+            rootVisualElement.Q<Button>("SaveButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Save);
+            rootVisualElement.Q<Button>("SaveAndCloseBtn").text = EditorAnnotationLocalization.Text(EAnnotationText.SaveAndClose);
+            rootVisualElement.Q<Button>("CancelButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Cancel);
+            rootVisualElement.Q<Button>("DeleteButton").text = EditorAnnotationLocalization.Text(EAnnotationText.Delete);
+            rootVisualElement.Q<Foldout>("PreviewFoldout").text = EditorAnnotationLocalization.Text(EAnnotationText.Preview);
+            UpdatePreview();
         }
 
         /// <summary>
@@ -139,7 +179,9 @@ namespace Lin.Editor.Annotation.Asset
                 previewText += description;
             }
 
-            previewLabel.text = string.IsNullOrEmpty(previewText) ? "预览将在这里显示..." : previewText;
+            previewLabel.text = string.IsNullOrEmpty(previewText)
+                ? EditorAnnotationLocalization.Text(EAnnotationText.EmptyPreview)
+                : previewText;
         }
 
         private void SaveComment(bool closeWindow)

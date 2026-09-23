@@ -25,6 +25,14 @@ namespace Lin.Editor.Annotation.Settings
 
         private const int DefaultTitleSize = 14;
 
+        internal static EAnnotationLanguage Language
+        {
+            get => EditorPrefs.GetInt(PrefKey(nameof(Language)), (int)EAnnotationLanguage.Chinese) == (int)EAnnotationLanguage.English
+                ? EAnnotationLanguage.English
+                : EAnnotationLanguage.Chinese;
+            set => EditorPrefs.SetInt(PrefKey(nameof(Language)), (int)value);
+        }
+
         // ----------------- Project 窗口资源注释 -----------------
 
         public static int AssetSummaryTitleSize

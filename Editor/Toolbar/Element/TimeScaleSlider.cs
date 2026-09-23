@@ -1,4 +1,5 @@
 using UnityEditor;
+using Lin.Editor.Annotation.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,7 +17,7 @@ namespace Lin.Editor.Annotation.Toolbar.Element
         public VisualElement Create()
         {
             var imgui = new IMGUIContainer(OnGUI);
-            imgui.tooltip = "TimeScale控制器";
+            imgui.tooltip = EditorAnnotationLocalization.Text(EAnnotationText.TimeScaleTooltip);
             return imgui;
         }
 
@@ -26,7 +27,7 @@ namespace Lin.Editor.Annotation.Toolbar.Element
             {
                 GUILayout.Space(5);
                 ToolbarElementDrawer.Button(OnResetBtnClick, "R");
-                GUILayout.Label("TimeScale");
+                GUILayout.Label(EditorAnnotationLocalization.Text(EAnnotationText.TimeScaleLabel));
                 Rect sliderRect = EditorGUILayout.GetControlRect(GUILayout.Width(200), GUILayout.Height(20));
                 Time.timeScale = EditorGUI.Slider(sliderRect, Time.timeScale, 0.2f, 5f);
             }

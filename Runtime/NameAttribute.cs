@@ -1,4 +1,4 @@
-namespace Lin.Editor.Annotation
+namespace Lin.Runtime.Annotation
 {
     /// <summary>
     /// 标注在 MonoBehaviour 类上，供 ScriptInspector 的右键菜单快速把 GameObject 名字改成该类名。
