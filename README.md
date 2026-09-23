@@ -1,8 +1,10 @@
 [简体中文](README.md) | [English](README_EN.md)
 
-# Lin Editor Annotation
+# Lin Editor Toolkit
 
-零外部依赖的编辑器注释工具。`package.json` 的 `dependencies` 为空对象，可安装进 Unity 工程。设置页支持中英文切换。
+面向 Unity 工作流的轻量编辑器工具集，覆盖 Project、Hierarchy、SceneView、Inspector 和主工具栏。无外部包依赖，设置页及包自带界面支持中英文切换。
+
+> Package Manager 展示名：**Lin Editor Toolkit**。技术包 ID 与目录暂保留为 `com.lin.editor-annotation`，以兼容现有 manifest 和本地路径引用。
 
 ## 安装
 
@@ -18,18 +20,16 @@
 
 最低要求 Unity 2021.3。本包已在 Unity 2021.3.45f2c1 编译验证；Unity 6 与团结 1.x 请按目标版本自行验证。
 
-## 包含什么
+## 功能总览
 
-| 能力 | 出现在哪 |
+| 功能 | 内容与入口 |
 |---|---|
-| 资源/文件夹注释 | Project 窗口列表视图，名字右侧 |
-| 脚本注释 | 同上，从 `.cs` 源码注释里提取 |
-| 场景物体注释 | Hierarchy 行内 |
-| SceneView 标注特性 | 选中物体组件及静态成员的 SceneView 面板与绘制回调 |
-| 注释样式配置与语言切换 | Project Settings → Lin Editor Annotation |
-| 配置页快捷入口 | 主工具栏右侧「注释」/“Note”按钮 |
-| Unity 菜单 | 菜单项提供中英文两项，当前语言项启用、另一项置灰 |
-| 按类名重命名 GameObject | Inspector 组件右键菜单 |
+| Project 注释 | 资源和文件夹标题、颜色、说明与悬停提示；从 `.cs` 注释标识提取脚本描述 |
+| Hierarchy 工具 | 场景物体注释；通过 `IHierarchyDrawable` 扩展 Hierarchy 行内绘制 |
+| 主工具栏扩展 | `[ToolbarButton]`、`[ToolbarToggle]`、`IToolbarElement`，并内置设置入口与播放时的 TimeScale 滑条 |
+| SceneView 标注 | `ShowInSceneGUI` 展示字段、属性和按钮；`DrawInSceneGUI` 执行自定义绘制回调 |
+| Inspector 快捷操作 | `[Name]` 为组件右键菜单中的 GameObject 重命名提供目标名称 |
+| 设置与本地化 | 注释样式、脚本描述标识、点击行为和中英文切换；Project Settings 与包自带菜单均提供入口 |
 
 ### 资源与文件夹注释
 

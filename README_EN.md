@@ -1,8 +1,10 @@
 [简体中文](README.md) | [English](README_EN.md)
 
-# Lin Editor Annotation
+# Lin Editor Toolkit
 
-A zero-dependency Unity Editor annotation package. The settings page supports Chinese and English; all package-owned UI and menu commands follow the selected language.
+A lightweight toolkit for Unity workflows across the Project window, Hierarchy, Scene View, Inspector, and main toolbar. It has no external package dependencies. The settings page and package-owned UI support Chinese and English.
+
+> Package Manager display name: **Lin Editor Toolkit**. The technical package ID and folder remain `com.lin.editor-annotation` for compatibility with existing manifests and local path references.
 
 ## Installation
 
@@ -18,18 +20,16 @@ You can also use **Package Manager → Add package from git URL / disk**.
 
 The minimum supported Unity version is 2021.3. The package was compiled in Unity 2021.3.45f2c1. Unity 6 toolbar and `EntityId` branches have not been compiled locally; see [Compatibility](#compatibility). Validate Tuanjie 1.x against the specific target version.
 
-## Features
+## Feature overview
 
-| Feature | Location |
+| Feature | Includes |
 |---|---|
-| Asset and folder annotations | To the right of names in the Project window list view |
-| Script annotations | Project window; extracted from `.cs` source comments |
-| Scene object annotations | Inline in Hierarchy rows |
-| Scene View attributes | Scene View panel and drawing callbacks for selected components and static members |
-| Settings and language toggle | Project Settings → Lin Editor Annotation |
-| Settings shortcut | “Note” button on the right side of the main toolbar |
-| Unity menu commands | Chinese and English entries; only the current language is enabled |
-| Rename GameObject by class name | Component context menu in the Inspector |
+| Project annotations | Titles, colors, descriptions, and tooltips for assets and folders; script descriptions extracted from configured `.cs` comment markers |
+| Hierarchy tools | Scene object annotations and the `IHierarchyDrawable` extension for inline row drawing |
+| Main toolbar extensions | `[ToolbarButton]`, `[ToolbarToggle]`, `IToolbarElement`, a built-in settings shortcut, and a play-mode TimeScale slider |
+| Scene View attributes | `ShowInSceneGUI` fields, properties, and method buttons; `DrawInSceneGUI` custom drawing callbacks |
+| Inspector shortcut | `[Name]` supplies a target GameObject name for the component context-menu command |
+| Settings and localization | Annotation styles, script markers, click behavior, and Chinese/English switching through Project Settings and package menus |
 
 ### Asset and folder annotations
 
