@@ -75,12 +75,12 @@ namespace Lin.Editor.Annotation.Asset
                 string description = descriptionMap[guid].description;
                 float fileNameWidth = EditorStyles.label.CalcSize(new GUIContent(fileName)).x;
 
-                // 列表视图整行很宽，注释放在名称右侧；图标视图在名称上方一行并贴齐资源项右边缘。
-                // ponytail: 按资源项宽度推断图标视图；Unity 没有公开的 ProjectBrowser 视图模式 API。
-                bool isGridView = selectionRect.width < EditorGUIUtility.currentViewWidth * 0.9f;
+                // 列表项很扁，网格项接近方形；按条目矩形判断，避免窄分栏把列表误判成网格。
+                float lineHeight = EditorGUIUtility.singleLineHeight;
+                bool isGridView = selectionRect.height > lineHeight * 2f ||
+                                  selectionRect.width < selectionRect.height * 4f;
                 if (isGridView)
                 {
-                    float lineHeight = EditorGUIUtility.singleLineHeight;
                     float labelY = selectionRect.height > lineHeight * 2f
                         ? selectionRect.yMax - lineHeight * 2f
                         : selectionRect.yMax + 2f;
