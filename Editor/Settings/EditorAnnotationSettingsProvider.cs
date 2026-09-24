@@ -78,6 +78,8 @@ namespace Lin.Editor.Annotation.Settings
                 EditorAnnotationSettings.ScriptDescriptionBold, v => EditorAnnotationSettings.ScriptDescriptionBold = v);
             changed |= BoolField(nameof(EditorAnnotationSettings.ScriptDescriptionItalic), EditorAnnotationLocalization.Text(EAnnotationText.Italic),
                 EditorAnnotationSettings.ScriptDescriptionItalic, v => EditorAnnotationSettings.ScriptDescriptionItalic = v);
+            changed |= IntField(nameof(EditorAnnotationSettings.ScriptDescriptionScanMaxLines), EditorAnnotationLocalization.Text(EAnnotationText.ScanMaxLines),
+                EditorAnnotationSettings.ScriptDescriptionScanMaxLines, v => EditorAnnotationSettings.ScriptDescriptionScanMaxLines = v);
 
             changed |= DescriptionMarkersList();
 
@@ -163,6 +165,14 @@ namespace Lin.Editor.Annotation.Settings
             return true;
         }
 
+        private static bool IntField(string key, string label, int current, System.Action<int> apply)
+        {
+            var value = EditorGUILayout.IntField(new GUIContent(label, GetTooltip(key)), current);
+            if (value == current) return false;
+            apply(value);
+            return true;
+        }
+
         private static bool ColorField(string key, string label, Color current, System.Action<Color> apply)
         {
             var value = EditorGUILayout.ColorField(new GUIContent(label, GetTooltip(key)), current);
@@ -211,6 +221,7 @@ namespace Lin.Editor.Annotation.Settings
         Color,
         Bold,
         Italic,
+        ScanMaxLines,
         DescriptionMarkers,
         DescriptionMarkersTooltip,
         AddMarker,
@@ -257,6 +268,7 @@ namespace Lin.Editor.Annotation.Settings
                 { EAnnotationText.Color, ("颜色", "Color") },
                 { EAnnotationText.Bold, ("粗体", "Bold") },
                 { EAnnotationText.Italic, ("斜体", "Italic") },
+                { EAnnotationText.ScanMaxLines, ("每个脚本扫描最大行数", "Max scanned lines per script") },
                 { EAnnotationText.DescriptionMarkers, ("描述标识", "Description markers") },
                 { EAnnotationText.DescriptionMarkersTooltip, ("在 .cs 文件里识别描述行的前缀，一行一个", "Prefixes used to identify description lines in .cs files, one per line") },
                 { EAnnotationText.AddMarker, ("添加标识", "Add marker") },

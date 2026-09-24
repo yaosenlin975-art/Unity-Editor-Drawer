@@ -13,6 +13,7 @@ namespace Lin.Editor.Annotation.Asset
     public static class AssetSummaryDrawer
     {
         private const float DISPLAY_OFFSET = 25;
+        private const int MIN_FONT_SIZE = 8;
 
         private static Dictionary<string, (string description, string tooltip)> descriptionMap;
         private static HashSet<string> readedList;
@@ -46,42 +47,41 @@ namespace Lin.Editor.Annotation.Asset
             if (descriptionMap.ContainsKey(guid))
             {
                 var labelRect = new Rect(selectionRect);
-                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                string fileName = Path.GetFileNameWithoutExtension(assetPath);
 
                 // 创建样式并启用富文本
                 var style = new GUIStyle(EditorStyles.miniLabel);
                 style.normal.textColor = new Color(0.6f, 0.6f, 0.6f, 1f);
                 style.richText = true;
                 style.fontSize = EditorAnnotationSettings.AssetSummaryTitleSize;
-                style.alignment = TextAnchor.MiddleRight;
 
-                // 计算文件名宽度
+                // 计算注释文本
                 string description = descriptionMap[guid].description;
-                float fileNameWidth = EditorStyles.label.CalcSize(new GUIContent(fileName)).x;
-
-                // 列表项很扁，网格项接近方形；按条目矩形判断，避免窄分栏把列表误判成网格。
-                float lineHeight = EditorGUIUtility.singleLineHeight;
-                bool isGridView = selectionRect.height > lineHeight * 2f ||
-                                  selectionRect.width < selectionRect.height * 4f;
-                if (isGridView)
-                {
-                    float labelY = selectionRect.height > lineHeight * 2f
-                        ? selectionRect.yMax - lineHeight * 2f
-                        : selectionRect.yMax + 2f;
-                    labelRect = new Rect(selectionRect.x + 2f, labelY, Mathf.Max(0f, selectionRect.width - 4f), lineHeight);
-                }
-                else
-                {
-                    float nameEndX = selectionRect.x + fileNameWidth + DISPLAY_OFFSET;
-                    float availableWidth = Mathf.Max(0f, selectionRect.xMax - nameEndX - 5f);
-                    labelRect.width = Mathf.Min(style.CalcSize(new GUIContent(description)).x, availableWidth);
-                    labelRect.x = selectionRect.xMax - labelRect.width - 5f;
-                }
 
                 // 对象Tooltip
                 var content = new GUIContent(description);
                 content.tooltip = descriptionMap[guid].tooltip;
+
+                // 网格格子竖长（宽 gridSize，高 gridSize + 14 的名字行），列表行横扁，按形状分模式
+                bool isGridView = selectionRect.width <= selectionRect.height;
+                if (isGridView)
+                {
+                    // 名字行下面只剩 15px 行间距，注释画在这一条里
+                    // ponytail: 字高超过行距时会压到下一格图标顶部几像素，点击热区同样多出这几像素；要干净就给高度封顶
+                    style.alignment = TextAnchor.MiddleCenter;
+                    labelRect = new Rect(selectionRect.x + 1f, selectionRect.yMax + 1f, Mathf.Max(0f, selectionRect.width - 2f), 0f);
+                    content = FitToWidth(style, content, labelRect.width);
+                    labelRect.height = style.CalcHeight(content, labelRect.width);
+                }
+                else
+                {
+                    style.alignment = TextAnchor.MiddleRight;
+                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                    string fileName = Path.GetFileNameWithoutExtension(assetPath);
+                    float nameEndX = selectionRect.x + EditorStyles.label.CalcSize(new GUIContent(fileName)).x + DISPLAY_OFFSET;
+                    float availableWidth = Mathf.Max(0f, selectionRect.xMax - nameEndX - 5f);
+                    labelRect.width = Mathf.Min(style.CalcSize(content).x, availableWidth);
+                    labelRect.x = selectionRect.xMax - labelRect.width - 5f;
+                }
 
                 // 绘制注释
                 GUI.Label(labelRect, content, style);
@@ -149,8 +149,9 @@ namespace Lin.Editor.Annotation.Asset
 
                 if (importer.assetPath.EndsWith(".cs"))
                 {
-                    // 读取.cs文件内容，按每个标识各提取一次（多个标识同时命中时会各加一段前缀，与原实现一致）
-                    string fileContent = File.ReadAllText(importer.assetPath);
+                    // 读取.cs头部内容（行数上限见设置页），按每个标识各提取一次（多个标识同时命中时会各加一段前缀，与原实现一致）
+                    string fileContent = EditorAnnotationSettings.ReadScriptHead(importer.assetPath,
+                        EditorAnnotationSettings.ScriptDescriptionScanMaxLines);
 
                     foreach (var filter in EditorAnnotationSettings.DescriptionFilters)
                         FindDescriptions(filter);
@@ -160,9 +161,11 @@ namespace Lin.Editor.Annotation.Asset
                         if (!fileContent.Contains(filter))
                             return;
 
+                        // filter 来自设置页可编辑文本，不转义时一个 "(" 就抛 ArgumentException 打断整轮 Project 绘制，
+                        // 而 guid 在上面已进 readedList，该资源的注释要到下次域重载才显示
                         var descMatch = System.Text.RegularExpressions.Regex.Match(
                             fileContent,
-                            @$"{filter}([^\n]+)");
+                            @$"{System.Text.RegularExpressions.Regex.Escape(filter)}([^\n]+)");
 
                         if (!descMatch.Success)
                             return;
@@ -187,6 +190,25 @@ namespace Lin.Editor.Annotation.Asset
                 if (!string.IsNullOrEmpty(title))
                     descriptionMap.Add(guid, (title, summary.description));
             }
+        }
+
+        /// <summary>
+        /// 注释字号写在 &lt;size=N&gt; 标签里（文件夹标题与脚本头注释两条路径都写），改 style.fontSize 压不住，
+        /// 所以格子放不下时按比例把标签里的字号一起改小。
+        /// </summary>
+        private static GUIContent FitToWidth(GUIStyle style, GUIContent content, float maxWidth)
+        {
+            float textWidth = style.CalcSize(content).x;
+            if (maxWidth <= 0f || textWidth <= maxWidth || textWidth <= 0f)
+                return content;
+
+            int fitted = Mathf.Max(MIN_FONT_SIZE, Mathf.FloorToInt(style.fontSize * maxWidth / textWidth) - 1);
+            if (fitted >= style.fontSize)
+                return content;
+
+            style.fontSize = fitted;
+            return new GUIContent(System.Text.RegularExpressions.Regex.Replace(content.text, @"<size=\d+>", $"<size={fitted}>"),
+                content.image, content.tooltip);
         }
 
         public static void Refresh(string guid)

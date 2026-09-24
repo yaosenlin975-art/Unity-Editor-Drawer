@@ -3,9 +3,6 @@
 │　Description:
 │　Remark:
 └────────────────────────────┘
-┌──────────────┐
-│　ClassName: OnSceneGUIAttribute
-└──────────────┘
 */
 
 namespace Lin.Runtime.Attribute

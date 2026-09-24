@@ -52,7 +52,7 @@ public class CameraFollow : MonoBehaviour { }
 
 The default markers are `Description: `, `Description：`, and `功能说明: ` (the first two use half-width and full-width colons respectively).
 
-The search scans the **entire file** and uses the first matching line; it is not limited to the file header. A matching string inside a string literal can also be picked up. Configure one marker per line on the settings page, without blank lines.
+The search reads only the first **Max scanned lines per script** lines (settings page, default 100) and uses the first matching line; it is not limited to the comment block. A matching string inside a string literal can also be picked up, while a marker placed below the configured line limit is missed. Configure one marker per line on the settings page, without blank lines.
 
 ### Scene object annotations
 
