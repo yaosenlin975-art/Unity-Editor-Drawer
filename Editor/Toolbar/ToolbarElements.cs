@@ -40,6 +40,22 @@ namespace Lin.Editor.Annotation.Toolbar
             if (ToolbarRoot.leftAlign == null)
                 return;
 
+            // 退订必须与订阅成对：中途抛出（枚举程序集、map 越界等）会把这里退化成"每帧全量反射扫描"，
+            // 编辑器卡死在刷日志上。工具栏容器还没就绪的早退分支留在 try 之外，那条要继续等下一帧
+            try
+            {
+                BuildToolbarElements();
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogError($"[Lin Editor Drawer] 构建工具栏元素失败: {ex.GetType().Name}: {ex.Message}");
+            }
+
+            EditorApplication.update -= OnUpdate;
+        }
+
+        private static void BuildToolbarElements()
+        {
             // 反射获取所有以 Lin.Editor.Annotation.Toolbar.Element.ToolbarElementBase为基类的类
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             // 创建一个字典来存储所有元素，按照对齐方式和可见模式进行分组

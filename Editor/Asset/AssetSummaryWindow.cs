@@ -68,6 +68,10 @@ namespace Lin.Editor.Annotation.Asset
 
             // 绑定事件
             BindEvents();
+
+            // 首次打开时 ShowAssetSummary 那一次 InitializeComponents 跑在 CreateGUI 之前，字段全是 null
+            // 而整段静默跳过，窗口显示空表单，点保存就把原注释写空；已建好 UI 的窗口仍由那一次负责
+            InitializeComponents();
         }
 
         private void OnEnable()
@@ -150,7 +154,10 @@ namespace Lin.Editor.Annotation.Asset
 
             var summary = importer.GetDescription();
 
-            ColorUtility.TryParseHtmlString($"#{summary.titleColor}", out var color);
+            // 无注释时 titleColor 为 null，TryParse 失败不改 color，直接回写会把出厂默认标题色冲成全黑
+            if (!ColorUtility.TryParseHtmlString($"#{summary.titleColor}", out var color))
+                color = EditorAnnotationSettings.DescriptionTitleDefaultColor;
+
             titleColorField.value = color;
             titleField.value = RemoveColorTag(summary.title);
             descriptionField.value = summary.description;

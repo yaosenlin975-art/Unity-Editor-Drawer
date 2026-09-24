@@ -259,14 +259,46 @@ namespace Lin.Editor.Annotation.SceneGUI
             for (int i = 0; i < typeInfo.fields.Length; i++)
             {
                 FieldInfo field = typeInfo.fields[i];
-                EditorGUILayout.LabelField(field.Name, GetDisplayValue(field.GetValue(classInfo.target)));
+                EditorGUILayout.LabelField(field.Name, ReadFieldValue(field, classInfo.target));
             }
 
             for (int i = 0; i < typeInfo.properties.Length; i++)
             {
                 PropertyInfo property = typeInfo.properties[i];
-                EditorGUILayout.LabelField(property.Name, GetDisplayValue(property.GetValue(classInfo.target)));
+                EditorGUILayout.LabelField(property.Name, ReadPropertyValue(property, classInfo.target));
             }
+        }
+
+        // 成员读取与调用随时可能抛（属性 getter 里带逻辑、目标已被销毁）。异常从 Begin/End 之间穿出去
+        // 会把 SceneView 的 IMGUI 配对打断，之后每帧都布局错乱，所以每个读取点各自兜住
+        private static string ReadFieldValue(FieldInfo field, object target)
+        {
+            try
+            {
+                return GetDisplayValue(field.GetValue(target));
+            }
+            catch (Exception ex)
+            {
+                return ReadMemberFailed(field.Name, ex);
+            }
+        }
+
+        private static string ReadPropertyValue(PropertyInfo property, object target)
+        {
+            try
+            {
+                return GetDisplayValue(property.GetValue(target));
+            }
+            catch (Exception ex)
+            {
+                return ReadMemberFailed(property.Name, ex);
+            }
+        }
+
+        private static string ReadMemberFailed(string memberName, Exception ex)
+        {
+            UnityEngine.Debug.LogError($"[Lin Editor Drawer] 读取 {memberName} 失败: {ex.GetType().Name}: {ex.Message}");
+            return "读取失败";
         }
 
         private static string GetDisplayValue(object value)
@@ -276,13 +308,20 @@ namespace Lin.Editor.Annotation.SceneGUI
 
         private static void Invoke(MethodInfo method, Action action, object target)
         {
-            if (action != null)
+            try
             {
-                action();
-                return;
-            }
+                if (action != null)
+                {
+                    action();
+                    return;
+                }
 
-            method.Invoke(target, null);
+                method.Invoke(target, null);
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogError($"[Lin Editor Drawer] 调用 {method.Name} 失败: {ex.GetType().Name}: {ex.Message}");
+            }
         }
 
         private static void InvokeDrawMethod(MethodInfo method, Action action, object target)

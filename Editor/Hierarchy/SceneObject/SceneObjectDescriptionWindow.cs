@@ -46,8 +46,11 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
                 EditorAnnotationLocalization.Text(EAnnotationText.SceneWindowTitle), true);
             wnd.minSize = new Vector2(400, 500);
             wnd.maxSize = new Vector2(600, 700);
-            wnd.LoadExistingComment(instanceId);
+            wnd.instanceId = instanceId;
             wnd.Show();
+            // 首次打开时 CreateGUI 还没跑完，这一次会被 LoadExistingComment 的判空挡掉，由 CreateGUI 末尾补做；
+            // 已建好 UI 的窗口（再次打开）由这里立即刷新
+            wnd.LoadExistingComment();
         }
 
         public void CreateGUI()
@@ -85,6 +88,8 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
 
             // 绑定事件
             BindEvents(saveButton, cancelButton, deleteButton);
+
+            LoadExistingComment();
         }
 
         private void OnEnable()
@@ -147,11 +152,13 @@ namespace Lin.Editor.Annotation.Hierarchy.SceneObject
         }
 
         /// <summary>
-        /// 加载现有的注释信息
+        /// 加载现有的注释信息。UI 未建好时（CreateGUI 之前被调用）直接跳过，等 CreateGUI 末尾再刷一次
         /// </summary>
-        private void LoadExistingComment(InstanceId instanceId)
+        private void LoadExistingComment()
         {
-            this.instanceId = instanceId;
+            if (titleColorField == null || targetField == null)
+                return;
+
             var description = SceneObjectDescriptionsMap.GetInstance().GetDescription(instanceId);
             titleColorField.value = description.color;
             titleField.value = description.title;
