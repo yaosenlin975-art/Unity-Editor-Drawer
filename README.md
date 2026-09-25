@@ -2,7 +2,7 @@
 
 # Lin Editor Drawer
 
-面向 Unity 工作流的轻量编辑器工具集，覆盖 Project、Hierarchy、SceneView、Inspector 和主工具栏。无外部包依赖，设置页及包自带界面支持中英文切换。
+面向 Unity 工作流的轻量编辑器工具集，覆盖 Project、Hierarchy、SceneView、Inspector 和主工具栏。外部只依赖 `com.unity.nuget.newtonsoft-json`（`userData` 容器要用它做 JSON 树解析），设置页及包自带界面支持中英文切换。
 
 > Package Manager 展示名：**Lin Editor Drawer**。包 ID 与目录均为 `com.lin.editor-drawer`。
 
@@ -35,11 +35,15 @@
 
 在 Project 窗口里选中资源或文件夹 → 右键 **修改注释**，填标题/颜色/说明。列表视图把标题放在名称右侧并贴齐资源项右边缘；图标网格视图把标题放在名称上方一行并贴右。鼠标悬停可查看说明。再次点击标题即可编辑（单击还是双击由配置页决定）。
 
-注释**不写进 `.meta`**，而是集中存在宿主工程的 `ProjectSettings/LinEditorAnnotation.json`：
+注释**存在资产自己的 `.meta` 里**（`AssetImporter.userData`，形如 `{"lin.annotation":{"title":"…","titleColor":"44AAFF","description":"…","createTime":"…","updateTime":"…"}}`）：
 
-- 加注释不会让资源导入器变脏，不会污染版本库里的资产文件；
-- 代价是这个 JSON 得跟着版本库走，多人协作时它会成为冲突热点；
-- 清理已删除资源留下的条目：**Lin → Editor Drawer → 清除已删除资源的注释 / Clear Deleted Asset Annotations**。
+- 注释随资产一起进版本库：复制、移动、换工程都不会丢，也不再有一个中央文件当合并热点；
+- 删除资产时注释一起消失，不需要清理孤儿条目（原先的「清除已删除资源的注释」菜单已随之移除）；
+- `userData` 是共享字符串，别的工具写过的内容本包会原样保留，只动 `lin.annotation` 这一个 key；
+- 代价：存注释会脏化该资产的导入器并触发一次重导入，**给 `.cs` 存注释还会引发一次脚本重编译**。批量给整个文件夹补注释时这点会很明显。
+- 另外：中文标题在 `.meta` 里会被 YAML 写成 `\uXXXX` 转义（ASCII 标题才是字面量）。也就是随资产进版本库换来的是**可 diff、可合并**，不是肉眼可读。
+
+> 旧版本（≤0.2.0）把注释集中在 `ProjectSettings/LinEditorAnnotation.json`。该文件已停用且不再读取，**不做自动迁移**：老注释需要重新填写，或自行按 GUID 把里面的 `items` 搬回各资产的 `.meta`。
 
 ### 脚本注释
 
@@ -93,7 +97,9 @@ public class SceneViewHints : MonoBehaviour
 
 **Project Settings → Lin Editor Drawer**，三段：资源注释、场景物体注释、脚本注释。字号限定 8–32；改动会自动重绘 Project 窗口。
 
-所有值存 `EditorPrefs`（key 前缀 `com.lin.editor-annotation/`），即**本机本用户**偏好，不进版本库、不随工程共享。
+9 个注释显示设置存在宿主的 `ProjectSettings/LinEditorDrawer.asset`（本包首次读到就自动生成，文本序列化、可 diff、进版本库、团队共享）。界面语言与主工具栏开关态是**本机本用户**偏好，仍存 `EditorPrefs`（key 前缀 `com.lin.editor-annotation/`），不进版本库——否则一个人切英文会替全组切。
+
+升级注意：从 `EditorPrefs` 迁来的这 9 项**不做搬迁**，装了新版会看到默认值；同一份 `.asset` 以后新增字段时，老工程里缺的字段会被反序列化成 0/空而非默认值，包用 `settingsVersion` + `Migrate()` 归位。
 
 ### 主工具栏
 
@@ -188,7 +194,7 @@ Scene GUI 两个 Attribute 保留 `Lin.Runtime.Attribute` 命名空间，但现�
 
 ## 改名与兼容性说明
 
-本次将包 ID 从 `com.lin.editor-annotation` 改为 `com.lin.editor-drawer`。安装路径或 manifest 使用旧 ID 的工程需要改用新 ID。为保留现有代码和数据，C# 命名空间 `Lin.Editor.Annotation.*`、程序集名 `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`、EditorPrefs 前缀 `com.lin.editor-annotation/` 及注释数据文件 `ProjectSettings/LinEditorAnnotation.json` 均继续沿用旧标识，无需迁移。
+本次将包 ID 从 `com.lin.editor-annotation` 改为 `com.lin.editor-drawer`。安装路径或 manifest 使用旧 ID 的工程需要改用新 ID。为保留现有代码，C# 命名空间 `Lin.Editor.Annotation.*`、程序集名 `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`、EditorPrefs 前缀 `com.lin.editor-annotation/` 均继续沿用旧标识。注释数据文件 `ProjectSettings/LinEditorAnnotation.json` 是例外：它自 Unreleased 起停用（见上文，不迁移）。
 
 ## Unity 版本兼容性
 

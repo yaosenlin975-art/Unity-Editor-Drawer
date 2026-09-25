@@ -152,7 +152,7 @@ namespace Lin.Editor.Annotation.Asset
             if (importer == null || titleColorField == null)
                 return;
 
-            var summary = importer.GetDescription();
+            var summary = importer.GetAnnotation();
 
             // 无注释时 titleColor 为 null，TryParse 失败不改 color，直接回写会把出厂默认标题色冲成全黑
             if (!ColorUtility.TryParseHtmlString($"#{summary.titleColor}", out var color))
@@ -193,7 +193,7 @@ namespace Lin.Editor.Annotation.Asset
 
         private void SaveComment(bool closeWindow)
         {
-            AssetSummaryArchiver.GetInstance().SetDescription(AssetImporter.GetAtPath(assetPath), new AssetSummary
+            AssetImporter.GetAtPath(assetPath).SetAnnotation(new AssetSummary
             {
                 title = titleField.value,
                 titleColor = ColorUtility.ToHtmlStringRGB(titleColorField.value),
@@ -205,7 +205,7 @@ namespace Lin.Editor.Annotation.Asset
 
         private void DeleteComment()
         {
-            AssetSummaryArchiver.GetInstance().RemoveDescription(AssetImporter.GetAtPath(assetPath));
+            AssetImporter.GetAtPath(assetPath).RemoveAnnotation();
             Close();
         }
 

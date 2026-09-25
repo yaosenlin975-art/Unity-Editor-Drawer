@@ -7,8 +7,9 @@ using UnityEngine.UIElements;
 namespace Lin.Editor.Annotation.Settings
 {
     /// <summary>
-    /// 本包的用户级编辑器偏好。原本挂在项目私有 EditorSettings_SO 上的注释相关字段落在这里，
-    /// 使包不需要在项目里创建或依赖任何配置资产。
+    /// 本包的设置门面。9 个注释显示设置存在 <see cref="AnnotationSettings"/>（宿主工程 ProjectSettings/ 下的
+    /// SO，随工程进版本库）；界面语言与主工具栏开关态是本机本用户偏好，仍存 EditorPrefs。
+    /// 属性名与签名保持不变，调用点无需感知后端换过。
     /// </summary>
     public static class EditorAnnotationSettings
     {
@@ -24,8 +25,6 @@ namespace Lin.Editor.Annotation.Settings
         /// <summary>注释标题未指定颜色时的兜底值，沿用原 EditorConst 的取值。</summary>
         public static readonly Color DescriptionTitleDefaultColor = new Color(0.267f, 2 / 3f, 1, 1);
 
-        private const int DefaultTitleSize = 14;
-
         internal static EAnnotationLanguage Language
         {
             get => EditorPrefs.GetInt(PrefKey(nameof(Language)), (int)EAnnotationLanguage.Chinese) == (int)EAnnotationLanguage.English
@@ -38,65 +37,56 @@ namespace Lin.Editor.Annotation.Settings
 
         public static int AssetSummaryTitleSize
         {
-            get => EditorPrefs.GetInt(PrefKey(nameof(AssetSummaryTitleSize)), DefaultTitleSize);
-            set => EditorPrefs.SetInt(PrefKey(nameof(AssetSummaryTitleSize)), value);
+            get => AnnotationSettings.Instance.assetSummaryTitleSize;
+            set { AnnotationSettings.Instance.assetSummaryTitleSize = value; AnnotationSettings.Save(); }
         }
 
         public static EClickType AssetSummaryEditWay
         {
-            get => (EClickType)EditorPrefs.GetInt(PrefKey(nameof(AssetSummaryEditWay)), (int)EClickType.单击);
-            set => EditorPrefs.SetInt(PrefKey(nameof(AssetSummaryEditWay)), (int)value);
+            get => AnnotationSettings.Instance.assetSummaryEditWay;
+            set { AnnotationSettings.Instance.assetSummaryEditWay = value; AnnotationSettings.Save(); }
         }
 
         // ----------------- Hierarchy 场景物体注释 -----------------
 
         public static int SceneObjectDescriptionTitleSize
         {
-            get => EditorPrefs.GetInt(PrefKey(nameof(SceneObjectDescriptionTitleSize)), DefaultTitleSize);
-            set => EditorPrefs.SetInt(PrefKey(nameof(SceneObjectDescriptionTitleSize)), value);
+            get => AnnotationSettings.Instance.sceneObjectDescriptionTitleSize;
+            set { AnnotationSettings.Instance.sceneObjectDescriptionTitleSize = value; AnnotationSettings.Save(); }
         }
 
         public static EClickType SceneObjectDescriptionEditWay
         {
-            get => (EClickType)EditorPrefs.GetInt(PrefKey(nameof(SceneObjectDescriptionEditWay)), (int)EClickType.单击);
-            set => EditorPrefs.SetInt(PrefKey(nameof(SceneObjectDescriptionEditWay)), (int)value);
+            get => AnnotationSettings.Instance.sceneObjectDescriptionEditWay;
+            set { AnnotationSettings.Instance.sceneObjectDescriptionEditWay = value; AnnotationSettings.Save(); }
         }
 
         // ----------------- 脚本注释（从 .cs 源码头部注释里提取） -----------------
 
         public static Color ScriptDescriptionColor
         {
-            get
-            {
-                // 默认取中灰：Alpha 不参与 ToHtmlStringRGB，深色/浅色主题下都可读
-                if (!ColorUtility.TryParseHtmlString(
-                        "#" + EditorPrefs.GetString(PrefKey(nameof(ScriptDescriptionColor)), "808080"), out var color))
-                    return Color.gray;
-                return color;
-            }
-            set => EditorPrefs.SetString(PrefKey(nameof(ScriptDescriptionColor)), ColorUtility.ToHtmlStringRGBA(value));
+            get => AnnotationSettings.Instance.scriptDescriptionColor;
+            set { AnnotationSettings.Instance.scriptDescriptionColor = value; AnnotationSettings.Save(); }
         }
 
         public static bool ScriptDescriptionBold
         {
-            get => EditorPrefs.GetBool(PrefKey(nameof(ScriptDescriptionBold)), false);
-            set => EditorPrefs.SetBool(PrefKey(nameof(ScriptDescriptionBold)), value);
+            get => AnnotationSettings.Instance.scriptDescriptionBold;
+            set { AnnotationSettings.Instance.scriptDescriptionBold = value; AnnotationSettings.Save(); }
         }
 
         public static bool ScriptDescriptionItalic
         {
-            get => EditorPrefs.GetBool(PrefKey(nameof(ScriptDescriptionItalic)), false);
-            set => EditorPrefs.SetBool(PrefKey(nameof(ScriptDescriptionItalic)), value);
+            get => AnnotationSettings.Instance.scriptDescriptionItalic;
+            set { AnnotationSettings.Instance.scriptDescriptionItalic = value; AnnotationSettings.Save(); }
         }
 
         /// <summary>描述标识的原始存储：换行分隔，一行一个。</summary>
         public static string DescriptionFiltersText
         {
-            get => EditorPrefs.GetString(PrefKey(nameof(DescriptionFilters)), DefaultDescriptionFiltersText);
-            set => EditorPrefs.SetString(PrefKey(nameof(DescriptionFilters)), value);
+            get => AnnotationSettings.Instance.descriptionFiltersText;
+            set { AnnotationSettings.Instance.descriptionFiltersText = value; AnnotationSettings.Save(); }
         }
-
-        private const string DefaultDescriptionFiltersText = "Description: \nDescription：\n功能说明: ";
 
         /// <summary>
         /// 供绘制使用的标识列表。空行必须滤掉——空标识会让 Contains("") 恒真，把源码首行当成注释。
@@ -120,16 +110,14 @@ namespace Lin.Editor.Annotation.Settings
         /// </summary>
         public static int ScriptDescriptionScanMaxLines
         {
-            get => Mathf.Max(1, EditorPrefs.GetInt(PrefKey(nameof(ScriptDescriptionScanMaxLines)), DefaultScanMaxLines));
-            set => EditorPrefs.SetInt(PrefKey(nameof(ScriptDescriptionScanMaxLines)), Mathf.Max(1, value));
+            get => Mathf.Max(1, AnnotationSettings.Instance.scriptDescriptionScanMaxLines);
+            set { AnnotationSettings.Instance.scriptDescriptionScanMaxLines = Mathf.Max(1, value); AnnotationSettings.Save(); }
         }
-
-        private const int DefaultScanMaxLines = 100;
 
         /// <summary>
         /// 只读脚本头部若干行，两处 .cs 注释扫描（Project 绘制、Markdown 汇总）共用。行与行之间补回 \n，
         /// 使既有的 Contains + 正则逐行提取逻辑不变。maxLines 由调用方传入 <see cref="ScriptDescriptionScanMaxLines"/>：
-        /// 汇总扫描在后台线程跑，那里读不了 EditorPrefs。
+        /// 汇总扫描在后台线程跑，那里读不了 SO。
         /// </summary>
         public static string ReadScriptHead(string assetPath, int maxLines)
         {
@@ -145,7 +133,7 @@ namespace Lin.Editor.Annotation.Settings
         }
 
         /// <summary>把共用样式表挂到窗口根节点上，两个注释窗口都用它。</summary>
-        public static void ApplyWindowStyleSheet(UnityEngine.UIElements.VisualElement root)
+        public static void ApplyWindowStyleSheet(VisualElement root)
         {
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(WindowStyleSheetPath);
             if (styleSheet != null)

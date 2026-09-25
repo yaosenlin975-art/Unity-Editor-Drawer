@@ -2,7 +2,7 @@
 
 # Lin Editor Drawer
 
-A lightweight toolkit for Unity workflows across the Project window, Hierarchy, Scene View, Inspector, and main toolbar. It has no external package dependencies. The settings page and package-owned UI support Chinese and English.
+A lightweight toolkit for Unity workflows across the Project window, Hierarchy, Scene View, Inspector, and main toolbar. Its only external dependency is `com.unity.nuget.newtonsoft-json`, which the `userData` container needs for JSON parsing. The settings page and package-owned UI support Chinese and English.
 
 > Package Manager display name: **Lin Editor Drawer**. The package ID and folder are `com.lin.editor-drawer`.
 
@@ -35,11 +35,15 @@ The minimum supported Unity version is 2021.3. The package was compiled in Unity
 
 In the Project window, select an asset or folder, right-click, and choose **Edit Annotation** (or **修改注释**). Enter a title, color, and description. In list view, the colored title appears to the right of the asset name and is aligned to the item's right edge; in icon grid view, it appears right-aligned on a separate line above the name. Hover to read the description. Click the annotation to edit it; choose single- or double-click behavior in the settings page.
 
-Annotations are **not stored in `.meta` files**. They are saved in the host project at `ProjectSettings/LinEditorAnnotation.json`:
+Annotations are **stored in each asset's own `.meta`** (`AssetImporter.userData`, shaped like `{"lin.annotation":{"title":"...","titleColor":"44AAFF","description":"...","createTime":"...","updateTime":"..."}}`):
 
-- Adding an annotation does not dirty the asset importer or modify asset files.
-- The JSON file must be versioned with the project. It can become a merge-conflict hotspot in team workflows.
-- Remove entries for deleted assets from **Lin → Editor Drawer → Clear Deleted Asset Annotations** (or **清除已删除资源的注释**).
+- They are versioned with the asset: copying, moving, or switching projects keeps them, and there is no central file to conflict over.
+- Deleting an asset deletes its annotation, so there are no orphan entries to clean up (the old **Clear Deleted Asset Annotations** menu is gone).
+- `userData` is a shared string; content written by other tools is preserved verbatim, and this package only touches the `lin.annotation` key.
+- The trade-off: saving an annotation dirties that asset's importer and triggers a reimport, and **annotating a `.cs` file also triggers a script recompile**. This is noticeable when you batch-annotate a folder.
+- Also: non-ASCII titles are written into the `.meta` as `\uXXXX` escapes by Unity's YAML layer (only ASCII titles stay literal). What you gain from versioning them with the asset is diffability and mergeability, not human readability.
+
+> Versions up to 0.2.0 kept annotations in `ProjectSettings/LinEditorAnnotation.json`. That file is no longer read and is **not migrated automatically**: re-enter the annotations, or move the `items` entries back into each asset's `.meta` by GUID yourself.
 
 ### Script annotations
 
@@ -95,7 +99,9 @@ Open **Project Settings → Lin Editor Drawer**. The page contains asset annotat
 
 Click **English** or **中文** at the top right to switch languages. The settings, annotation windows, built-in toolbar text, and package menu commands update immediately. The language choice is saved in local `EditorPrefs` and remains after Unity restarts. Native Unity menus retain both language entries: the active language is enabled and the other is disabled. Open annotation windows update their labels without changing the annotation text being edited.
 
-Settings are stored in `EditorPrefs` under the `com.lin.editor-annotation/` key prefix. These preferences are local to the current user and machine; they are not stored in the project or shared with teammates.
+The nine annotation display settings live in the host's `ProjectSettings/LinEditorDrawer.asset`, which this package creates on first access (text-serialized, diffable, versioned, shared with the team). The UI language and main-toolbar toggle states are **local to the current user and machine** and stay in `EditorPrefs` under the `com.lin.editor-annotation/` key prefix — otherwise one person switching to English would switch it for everyone.
+
+Upgrade note: the nine migrated settings are **not** copied over from `EditorPrefs`; after installing this version you will see the defaults again.
 
 Toolbar buttons registered by consumers through `ToolbarButtonAttribute` or other extension APIs keep the text supplied by the consumer; the package does not translate custom extension labels.
 
@@ -185,7 +191,7 @@ The two Scene View attributes keep the `Lin.Runtime.Attribute` namespace, but ar
 
 ## Rename compatibility
 
-The package ID changed from `com.lin.editor-annotation` to `com.lin.editor-drawer`; projects using the old ID in a manifest or local package path must switch to the new ID. To preserve existing code and data, the C# namespaces `Lin.Editor.Annotation.*`, assembly names `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`, the `com.lin.editor-annotation/` EditorPrefs prefix, and the annotation data file `ProjectSettings/LinEditorAnnotation.json` remain unchanged. No migration is needed for these identifiers.
+The package ID changed from `com.lin.editor-annotation` to `com.lin.editor-drawer`; projects using the old ID in a manifest or local package path must switch to the new ID. To preserve existing code, the C# namespaces `Lin.Editor.Annotation.*`, assembly names `Lin.Editor.Annotation` / `Lin.Runtime.Annotation`, and the `com.lin.editor-annotation/` EditorPrefs prefix remain unchanged. The annotation data file `ProjectSettings/LinEditorAnnotation.json` is the exception: it was retired in Unreleased (see above; no migration).
 
 ## Unity compatibility
 

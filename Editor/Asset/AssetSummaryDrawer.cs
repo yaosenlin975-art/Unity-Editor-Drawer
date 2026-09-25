@@ -142,7 +142,7 @@ namespace Lin.Editor.Annotation.Asset
                 if (importer == null)
                     return;
 
-                var summary = importer.GetDescription();
+                var summary = importer.GetAnnotation();
                 string title = summary.title;
                 if (!string.IsNullOrEmpty(title))
                     title = summary.GetRichTitle();

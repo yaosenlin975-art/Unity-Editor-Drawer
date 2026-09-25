@@ -199,8 +199,7 @@ namespace Lin.Editor.Annotation.Settings
         }
 
         private static string GetTooltip(string key) =>
-            EditorAnnotationLocalization.Text(EAnnotationText.PreferenceTooltip)
-                .Replace("{0}", EditorAnnotationSettings.PrefKey(key));
+            EditorAnnotationLocalization.Text(EAnnotationText.PreferenceTooltip).Replace("{0}", key);
     }
 
     internal enum EAnnotationLanguage
@@ -274,7 +273,7 @@ namespace Lin.Editor.Annotation.Settings
                 { EAnnotationText.AddMarker, ("添加标识", "Add marker") },
                 { EAnnotationText.RemoveMarker, ("移除", "Remove") },
                 { EAnnotationText.SizePreview, ("注释", "Note") },
-                { EAnnotationText.PreferenceTooltip, ("存储于 EditorPrefs：{0}（本机本用户，不随工程进版本库）", "Stored in EditorPrefs: {0} (local to this user and machine; not stored with the project)") },
+                { EAnnotationText.PreferenceTooltip, ("存储于 ProjectSettings/LinEditorDrawer.asset（设置项 {0}，随工程进版本库、团队共享）", "Stored in the {0} setting of ProjectSettings/LinEditorDrawer.asset (versioned with the project, shared across the team)") },
                 { EAnnotationText.ClickNone, ("无响应", "None") },
                 { EAnnotationText.ClickSingle, ("单击", "Single click") },
                 { EAnnotationText.ClickDouble, ("双击", "Double click") },

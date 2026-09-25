@@ -9,6 +9,9 @@
 - 优化：Project 资源注释贴齐条目右侧；字号设置改为带预览的滑动条，描述标识改为可编辑列表。
 - 新增：设置页「每个脚本扫描最大行数」（默认 100），脚本注释只读文件开头这么多行，避免把第三方包里的几千行脚本整份读进 Project 绘制。
 - 修复：Project 窗口放大图标后，资源注释因仍按列表行计算坐标而被裁切；图标网格改在名称附近单独显示注释。
+- 变更：**资源/文件夹注释不再存 `ProjectSettings/LinEditorAnnotation.json`，改存各资产 `.meta` 的 `userData`（key `lin.annotation`）**。注释随资产进版本库、随资产删除，"清除已删除资源的注释"菜单随之移除。**破坏性变更**：旧中央档不迁移、也不再读取，老注释需重新填写（或自行按 GUID 把 `items` 搬回各资产 `.meta`）。
+- 变更：**包设置从 `EditorPrefs` 迁到 `ProjectSettings/LinEditorDrawer.asset`**（`AnnotationSettings` ScriptableObject，首次访问自动生成，文本序列化）。界面语言与主工具栏开关态仍留在 `EditorPrefs`。**破坏性变更**：9 个注释显示设置不做搬迁，升级后回到默认值；SO 里缺字段会被反序列化成 0/空，由 `settingsVersion` + `Migrate()` 归位。设置页每项的悬停提示改为指向该 `.asset`。
+- 新增：`ImporterUserData` —— `userData` 的公开读写容器（`GetUserData<T>/SetUserData<T>/RemoveUserData`、`Get/Set/RemoveAnnotation`）。未知 key 逐字保留、读路径绝不写盘、删空最后一个 key 后整串置空。新增 `Tests/Editor`（EditMode，10 条）覆盖容器、编解码与设置默认值/迁移，含一条断言锁住与 ADR-004 冻结格式（`{"TAGS_KEY":"[\"ImporterModified\"]"}`）的字节一致性。**破坏性变更**：包自此依赖 `com.unity.nuget.newtonsoft-json`（下限 3.0.2），不再是零依赖包。
 
 ## 0.2.0 (2026-09-22)
 
