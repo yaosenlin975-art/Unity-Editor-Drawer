@@ -1,9 +1,10 @@
+using Lin.Editor.Annotation;
 using UnityEditor;
 using Lin.Editor.Annotation.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lin.Editor.Annotation.Toolbar.Element
+namespace Lin.Editor.Toolbar.Element
 {
     public abstract class ToolbarElementBase : IToolbarElement
     {

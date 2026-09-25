@@ -1,5 +1,6 @@
+using Lin.Editor.Annotation;
 using Lin.Editor.Annotation.Settings;
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lin.Editor.Annotation.Toolbar
+namespace Lin.Editor.Toolbar
 {
     [InitializeOnLoad]
     public static class ToolbarElements
@@ -56,7 +57,7 @@ namespace Lin.Editor.Annotation.Toolbar
 
         private static void BuildToolbarElements()
         {
-            // 反射获取所有以 Lin.Editor.Annotation.Toolbar.Element.ToolbarElementBase为基类的类
+            // 反射获取所有以 Lin.Editor.Toolbar.Element.ToolbarElementBase为基类的类
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             // 创建一个字典来存储所有元素，按照对齐方式和可见模式进行分组
             Dictionary<EAlign, Dictionary<EVisibleMode, List<IToolbarElement>>> map = new Dictionary<EAlign, Dictionary<EVisibleMode, List<IToolbarElement>>>();

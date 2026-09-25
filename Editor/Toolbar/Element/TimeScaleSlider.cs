@@ -3,7 +3,7 @@ using Lin.Editor.Annotation.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lin.Editor.Annotation.Toolbar.Element
+namespace Lin.Editor.Toolbar.Element
 {
     /// <summary>包自带的示例元素：播放期间在工具栏中部调节 TimeScale。</summary>
     public class TimeScaleSlider : IToolbarElement

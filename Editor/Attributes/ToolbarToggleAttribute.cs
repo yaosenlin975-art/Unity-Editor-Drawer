@@ -1,5 +1,5 @@
 using Lin.Editor.Annotation.Settings;
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 using UnityEditor;
 
 namespace Lin.Editor.Annotation

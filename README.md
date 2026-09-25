@@ -101,7 +101,7 @@ public class SceneViewHints : MonoBehaviour
 
 ```csharp
 using Lin.Editor.Annotation;
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
@@ -119,12 +119,14 @@ public static class MyToolbarButtons
 }
 ```
 
-> 两个 `using` 都不能省。少了 `Lin.Editor.Annotation.Toolbar.Element`，`ToolbarButton` 会被 `using UnityEditor;` 里的同名 Unity 类型吃掉，报"'ToolbarButton' 不是特性类"。
+> 两个 `using` 都不能省。少了 `Lin.Editor.Toolbar.Element`，`ToolbarButton` 会被 `using UnityEditor;` 里的同名 Unity 类型吃掉，报"'ToolbarButton' 不是特性类"。
+>
+> 命名空间刻意挂在 `Lin.Editor.Toolbar` 下而不是 `Lin.Editor.Annotation.Toolbar`：`Lin.Editor.*` 里的调用点可以写全限定形式 `Toolbar.Element.EAlign`。编译器先在**外层命名空间的成员**里找 `Toolbar`，才轮到 `using` 导进来的类型——放在 `Annotation` 下面时，`using UnityEditor.UIElements;` 带进来的公开类型 `Toolbar`（2021.3.45 与 2022.3.62t12 实测都存在）会把这个命名空间挤掉，报 `CS0117: 'Toolbar' 不包含 'Element' 的定义`。
 
 或者实现 `IToolbarElement` 自行返回一个 `VisualElement`：
 
 ```csharp
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 
 public class MySlider : IToolbarElement
 {

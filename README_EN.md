@@ -105,7 +105,7 @@ The package adds a **Note** button on the right side of the main toolbar to open
 
 ```csharp
 using Lin.Editor.Annotation;
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
@@ -122,13 +122,14 @@ public static class MyToolbarButtons
 }
 ```
 
-Both `using` directives are required. Without `Lin.Editor.Annotation.Toolbar.Element`, Unity's `ToolbarButton` type from `UnityEditor` takes precedence and the compiler reports that `ToolbarButton` is not an attribute class. The third attribute argument can also be a built-in icon name or button text. ASCII strings are treated as icon names; for a literal label, use non-ASCII text or a valid texture path.
+Both `using` directives are required. Without `Lin.Editor.Toolbar.Element`, Unity's `ToolbarButton` type from `UnityEditor` takes precedence and the compiler reports that `ToolbarButton` is not an attribute class. The third attribute argument can also be a built-in icon name or button text. ASCII strings are treated as icon names; for a literal label, use non-ASCII text or a valid texture path.
 
+The namespace deliberately sits under `Lin.Editor.Toolbar` rather than `Lin.Editor.Annotation.Toolbar`: call sites inside `Lin.Editor.*` can then spell the qualified form `Toolbar.Element.EAlign`. The compiler looks for `Toolbar` among the members of the enclosing namespaces before it considers types brought in by `using` — under `Annotation` the public `Toolbar` type from `UnityEditor.UIElements` (present in both 2021.3.45 and 2022.3.62t12) pushed Lin's namespace aside and the call site failed with `CS0117: 'Toolbar' does not contain a definition for 'Element'`.
 Alternatively, implement `IToolbarElement` and return a `VisualElement`:
 
 ```csharp
 using UnityEngine.UIElements;
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 
 public class MySlider : IToolbarElement
 {

@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lin.Editor.Annotation.Toolbar
+namespace Lin.Editor.Toolbar
 {
     [InitializeOnLoad]
     public static class ToolbarRoot

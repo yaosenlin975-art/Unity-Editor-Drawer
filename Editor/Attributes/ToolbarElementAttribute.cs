@@ -1,4 +1,4 @@
-using Lin.Editor.Annotation.Toolbar.Element;
+using Lin.Editor.Toolbar.Element;
 
 namespace Lin.Editor.Annotation
 {

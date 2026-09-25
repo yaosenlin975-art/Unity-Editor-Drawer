@@ -1,4 +1,4 @@
-namespace Lin.Editor.Annotation.Toolbar.Element
+namespace Lin.Editor.Toolbar.Element
 {
     public enum EAlign
     {

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - 改名：Package Manager 产品名与包 ID 更新为 Lin Editor Drawer / `com.lin.editor-drawer`；保留既有命名空间、程序集及用户配置存储标识以兼容已有工程。
+- 修复：调用点写全限定形式 `[ToolbarButton(Toolbar.Element.EAlign...)]` 时报 `CS0117: 'Toolbar' does not contain a definition for 'Element'`——`using UnityEditor.UIElements;` 带进来的公开类型 `Toolbar` 挤掉了 Lin 的 `Toolbar` 命名空间（2021.3.45 与 2022.3.62t12 实测都存在，不是版本差异）。工具栏命名空间由 `Lin.Editor.Annotation.Toolbar[.Element]` 改为 `Lin.Editor.Toolbar[.Element]`，`Lin.Editor.*` 里的调用点因此按外层命名空间解析，两个编辑器版本都通过。**破坏性变更**：外部代码需把 `using Lin.Editor.Annotation.Toolbar.Element;` 改成 `using Lin.Editor.Toolbar.Element;`。
 - 修复：Project 窄分栏列表被误判为图标网格，导致注释下移到下一行。
 - 调整：Project 注释绘制样式同步配置字号，统一富文本标签与样式的字号度量。
 - 优化：Project 资源注释贴齐条目右侧；字号设置改为带预览的滑动条，描述标识改为可编辑列表。

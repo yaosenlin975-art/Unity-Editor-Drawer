@@ -1,7 +1,8 @@
+using Lin.Editor.Annotation;
 using System;
 using UnityEngine;
 
-namespace Lin.Editor.Annotation.Toolbar.Element
+namespace Lin.Editor.Toolbar.Element
 {
     public class ToolbarToggle : ToolbarElementBase
     {

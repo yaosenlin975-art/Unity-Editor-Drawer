@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lin.Editor.Annotation.Toolbar
+namespace Lin.Editor.Toolbar
 {
     public static class ToolbarElementDrawer
     {
