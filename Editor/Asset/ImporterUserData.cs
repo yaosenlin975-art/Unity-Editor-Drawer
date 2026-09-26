@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ namespace Lin.Editor.Annotation.Asset
     public static class ImporterUserData
     {
         internal const string AnnotationKey = "lin.annotation";
+        internal const string UrisKey = "lin.uris";
 
         #region - 纯变换（string→string，给单测直打，不碰 AssetImporter） -
 
@@ -207,6 +209,42 @@ namespace Lin.Editor.Annotation.Asset
             Apply(self, RemoveKey(self.userData, AnnotationKey), true);
             AssetSummaryDrawer.Refresh(GetAssetGUID(self));
         }
+
+        #endregion
+
+        #region - URI 层 -
+
+        /// <summary>资产上的自定义链接表（标题 → uri）。无记录时给空表，绝不返回 null。</summary>
+        public static Dictionary<string, string> GetUris(this AssetImporter self)
+        {
+            if (self == null)
+                return new Dictionary<string, string>();
+
+            return ReadValue<Dictionary<string, string>>(self.userData, UrisKey) ?? new Dictionary<string, string>();
+        }
+
+        public static void SetUri(this AssetImporter self, string key, string uri)
+        {
+            if (string.IsNullOrEmpty(key))
+                return;
+
+            var uris = self.GetUris();
+            uris[key] = uri;
+            Apply(self, WriteUris(self.userData, uris), true);
+        }
+
+        public static void RemoveUri(this AssetImporter self, string key)
+        {
+            var uris = self.GetUris();
+            if (uris.Remove(key))
+                Apply(self, WriteUris(self.userData, uris), true);
+        }
+
+        /// <summary>表删空时连 key 一起摘掉，不留 "lin.uris":{} 这种空壳。</summary>
+        private static string WriteUris(string userData, Dictionary<string, string> uris) =>
+            uris.Count == 0
+                ? RemoveKey(userData, UrisKey)
+                : SetNativeKey(userData, UrisKey, JsonConvert.SerializeObject(uris));
 
         #endregion
     }

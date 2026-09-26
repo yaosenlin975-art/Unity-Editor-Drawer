@@ -29,6 +29,7 @@ The minimum supported Unity version is 2021.3. The package was compiled in Unity
 | Main toolbar extensions | `[ToolbarButton]`, `[ToolbarToggle]`, `IToolbarElement`, a built-in settings shortcut, and a play-mode TimeScale slider |
 | Scene View attributes | `ShowInSceneGUI` fields, properties, and method buttons; `DrawInSceneGUI` custom drawing callbacks |
 | Inspector shortcut | `[Name]` supplies a target GameObject name for the component context-menu command |
+| Default asset Inspector | Inspector for folders and `DefaultImporter` assets: annotation details, custom links (URIs) add/edit/remove/open, and a browsable subtree of folder contents |
 | Settings and localization | Annotation styles, script markers, click behavior, and Chinese/English switching through Project Settings and package menus |
 
 ### Asset and folder annotations
@@ -44,6 +45,28 @@ Annotations are **stored in each asset's own `.meta`** (`AssetImporter.userData`
 - Also: non-ASCII titles are written into the `.meta` as `\uXXXX` escapes by Unity's YAML layer (only ASCII titles stay literal). What you gain from versioning them with the asset is diffability and mergeability, not human readability.
 
 > Versions up to 0.2.0 kept annotations in `ProjectSettings/LinEditorAnnotation.json`. That file is no longer read and is **not migrated automatically**: re-enter the annotations, or move the `items` entries back into each asset's `.meta` by GUID yourself.
+
+### Default asset Inspector and custom links
+
+The package takes over the Inspector of **folders and assets imported by `DefaultImporter`** (things without a dedicated importer, such as `.dll` files) through `[CustomEditor(typeof(DefaultAsset), true)]`. Selecting one shows, in the header:
+
+- the asset path, colored title, description, and created/updated timestamps — only when the asset has an annotation title;
+- two buttons: **修改备注** (opens the annotation window described above) and **添加uri** (a two-field Title + URI input window);
+- every stored link as its own row, with **修改** / **访问** (`Application.OpenURL`) / **移除** buttons.
+
+Links live in the same `userData` container as annotations, under the `lin.uris` key, as a native JSON object:
+
+```jsonc
+{"lin.annotation":{"title":"batch-runtime", "...":"..."}, "lin.uris":{"design-doc":"https://example.com/a"}}
+```
+
+- Nothing is written until you press **Save** in the input window or click **移除**; each such write calls `SaveAndReimport`. Reading never writes.
+- Removing the last link drops the `lin.uris` key entirely instead of leaving `"lin.uris":{}`.
+- The reader also accepts the older double-encoded shape (the value stored as a serialized string), it just no longer produces it.
+
+Selecting a **folder** additionally lists its whole subtree in the Inspector: `.meta` files are skipped, every entry shows its icon, name, and its own annotation title; clicking an entry pings it in the Project window, and clicking the same entry again opens it.
+
+> The cost: that tree is built in `OnEnable` by recursively walking the file system with `Directory.GetFiles/GetDirectories`, one importer and cached-icon lookup per entry, and it is **rebuilt on every selection change**. Selecting a large directory such as `Assets/` will visibly stall the Inspector — this package offers neither a toggle nor a cache for it. The text in this part of the UI is fixed Chinese and is not covered by language switching.
 
 ### Script annotations
 

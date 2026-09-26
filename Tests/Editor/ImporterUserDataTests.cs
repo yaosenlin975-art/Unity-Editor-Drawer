@@ -1,5 +1,6 @@
 using Lin.Editor.Annotation.Asset;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Lin.Editor.Annotation.Tests
 {
@@ -105,6 +106,46 @@ namespace Lin.Editor.Annotation.Tests
             Assert.IsNull(back.updateTime);
             Assert.AreEqual(default(AssetSummary), ImporterUserData.AnnotationFromJson("hello"));
             Assert.AreEqual(default(AssetSummary), ImporterUserData.AnnotationFromJson(null));
+        }
+
+        [Test]
+        public void U1_UrisAreNativeObjectAlongsideAnnotationAndTag()
+        {
+            var withAnnotation = ImporterUserData.SetNativeKey(ForeignTags, ImporterUserData.AnnotationKey,
+                "{\"title\":\"batch-runtime\"}");
+            var withUris = ImporterUserData.SetNativeKey(withAnnotation, ImporterUserData.UrisKey,
+                "{\"doc\":\"https://a\",\"issue\":\"https://b\"}");
+
+            // 三条线住在同一个 userData 串里：uris 是原生对象、tag 仍是 ADR-004 的双层串，互不转义
+            Assert.AreEqual(
+                "{\"TAGS_KEY\":\"[\\\"ImporterModified\\\"]\",\"lin.annotation\":{\"title\":\"batch-runtime\"}," +
+                "\"lin.uris\":{\"doc\":\"https://a\",\"issue\":\"https://b\"}}", withUris);
+        }
+
+        [Test]
+        public void U2_UrisRoundTrip()
+        {
+            var written = ImporterUserData.SetNativeKey(string.Empty, ImporterUserData.UrisKey,
+                "{\"doc\":\"https://a\"}");
+
+            var back = ImporterUserData.ReadValue<Dictionary<string, string>>(written, ImporterUserData.UrisKey);
+
+            Assert.AreEqual(1, back.Count);
+            Assert.AreEqual("https://a", back["doc"]);
+            // 表删空 = 摘掉 key（WriteUris 走这条），不留 "lin.uris":{}
+            Assert.AreEqual(string.Empty, ImporterUserData.RemoveKey(written, ImporterUserData.UrisKey));
+        }
+
+        [Test]
+        public void U3_LegacyDoubleEncodedUrisStillRead()
+        {
+            // Learn 旧 ImporterHelper 写的是双层编码。本包不产这个形状，但读路径要认，
+            // 否则别处存的 URI 在这里表现为"一条都没有"。
+            var legacy = "{\"lin.uris\":\"{\\\"doc\\\":\\\"https://a\\\"}\"}";
+
+            var back = ImporterUserData.ReadValue<Dictionary<string, string>>(legacy, ImporterUserData.UrisKey);
+
+            Assert.AreEqual("https://a", back["doc"]);
         }
     }
 }

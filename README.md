@@ -29,6 +29,7 @@
 | 主工具栏扩展 | `[ToolbarButton]`、`[ToolbarToggle]`、`IToolbarElement`，并内置设置入口与播放时的 TimeScale 滑条 |
 | SceneView 标注 | `ShowInSceneGUI` 展示字段、属性和按钮；`DrawInSceneGUI` 执行自定义绘制回调 |
 | Inspector 快捷操作 | `[Name]` 为组件右键菜单中的 GameObject 重命名提供目标名称 |
+| 默认资源 Inspector | 文件夹与 `DefaultImporter` 资产的 Inspector：注释详情、自定义链接（URI）增删改与打开、文件夹子资源树浏览 |
 | 设置与本地化 | 注释样式、脚本描述标识、点击行为和中英文切换；Project Settings 与包自带菜单均提供入口 |
 
 ### 资源与文件夹注释
@@ -44,6 +45,28 @@
 - 另外：中文标题在 `.meta` 里会被 YAML 写成 `\uXXXX` 转义（ASCII 标题才是字面量）。也就是随资产进版本库换来的是**可 diff、可合并**，不是肉眼可读。
 
 > 旧版本（≤0.2.0）把注释集中在 `ProjectSettings/LinEditorAnnotation.json`。该文件已停用且不再读取，**不做自动迁移**：老注释需要重新填写，或自行按 GUID 把里面的 `items` 搬回各资产的 `.meta`。
+
+### 默认资源 Inspector 与自定义链接
+
+包用 `[CustomEditor(typeof(DefaultAsset), true)]` 接管了**文件夹和走 `DefaultImporter` 的资产**（`.dll` 这类没有专用导入器的东西）的 Inspector。选中它们时，Inspector 头部会给出：
+
+- 有注释标题时，显示资产路径、着色标题、说明与创建/更新时间；
+- 两枚按钮：**修改备注**（打开上文那个注释窗口）与**添加uri**（弹一个「标题 + URI」两行输入窗）；
+- 已有的每条链接各占一段，配 **修改** / **访问**（`Application.OpenURL`）/ **移除** 三个按钮。
+
+链接与注释住在同一个 `userData` 容器里，key 为 `lin.uris`，值是原生对象：
+
+```jsonc
+{"lin.annotation":{"title":"运行时合批", "...":"..."}, "lin.uris":{"设计稿":"https://example.com/a"}}
+```
+
+- 只有点输入窗的 **Save** 或按**移除**才写盘（`SaveAndReimport`），读的时候绝不写；
+- 删掉最后一条链接会连 `lin.uris` 这个 key 一起摘掉，不留 `"lin.uris":{}`；
+- 读路径也认「值是序列化好的字符串」这种双层写法（源自框架侧的旧实现），只是本包不再产出它。
+
+选中**文件夹**时，Inspector 还会递归列出整棵子树：`.meta` 被跳过，每条显示图标、名字与该条自己的注释标题；点一条在 Project 窗口里 ping 它，再点同一条即打开该资源。
+
+> 代价：这棵树是在 `OnEnable` 里用 `Directory.GetFiles/GetDirectories` 递归扫文件系统建起来的，每条还要查一次 importer 与缓存图标，并且**每次换选中都重算**。选中 `Assets/` 这类大目录会明显卡顿。要快就别在 Inspector 里停在大目录上（本包不为它提供开关或缓存）。这一段界面的文字是固定的中文，不在中英切换范围内。
 
 ### 脚本注释
 

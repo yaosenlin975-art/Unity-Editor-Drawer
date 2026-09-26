@@ -24,7 +24,7 @@ namespace Lin.Editor.Annotation.Settings
             provider = new SettingsProvider(PagePath, SettingsScope.Project)
             {
                 label = EditorAnnotationLocalization.Text(EAnnotationText.SettingsPageLabel),
-                keywords = new HashSet<string> { "Annotation", "Hierarchy", "Toolbar", "注释", "Description", "Summary", "脚本" },
+                keywords = new HashSet<string> { "Annotation", "Hierarchy", "Toolbar", "注释", "Description", "Summary", "脚本", "Import", "导入策略" },
                 guiHandler = _ => DrawGUI()
             };
             EditorAnnotationLocalization.LanguageChanged -= OnLanguageChanged;
@@ -83,9 +83,50 @@ namespace Lin.Editor.Annotation.Settings
 
             changed |= DescriptionMarkersList();
 
+            ImportPolicySection();
+
             // Project 窗口的绘制结果带缓存，样式或标识变了要重扫；Hierarchy 每帧现读，不需要
             if (changed)
                 AssetSummaryDrawer.Refresh();
+        }
+
+        /// <summary>
+        /// 导入策略段：字段从 com.lin.editor-asset-import 并进同一个 SO，仍住 ProjectSettings/LinEditorDrawer.asset。
+        /// 这一段改动只影响导入器、不影响 Project 窗口的绘制，所以不进上面的 changed；
+        /// 但 AssetDatabase 看不见这个对象，写完必须立刻 Save()。
+        /// </summary>
+        private static void ImportPolicySection()
+        {
+            var settings = AnnotationSettings.Instance;
+            bool changed = false;
+
+            Section(EditorAnnotationLocalization.Text(EAnnotationText.ImportSection));
+            changed |= BoolField(nameof(AnnotationSettings.enabled), EditorAnnotationLocalization.Text(EAnnotationText.ImportEnabled),
+                settings.enabled, v => settings.enabled = v, EditorAnnotationLocalization.Text(EAnnotationText.ImportEnabledTooltip));
+            changed |= BoolField(nameof(AnnotationSettings.videoEnabled), EditorAnnotationLocalization.Text(EAnnotationText.ImportVideoEnabled),
+                settings.videoEnabled, v => settings.videoEnabled = v, EditorAnnotationLocalization.Text(EAnnotationText.ImportVideoEnabledTooltip));
+
+            Section(EditorAnnotationLocalization.Text(EAnnotationText.PlatformSection));
+            changed |= StringListField(nameof(AnnotationSettings.overriddenPlatforms), EditorAnnotationLocalization.Text(EAnnotationText.OverriddenPlatforms),
+                settings.overriddenPlatforms, v => settings.overriddenPlatforms = v, EditorAnnotationLocalization.Text(EAnnotationText.OverriddenPlatformsTooltip));
+            changed |= StringListField(nameof(AnnotationSettings.followBuildDefaultPlatforms), EditorAnnotationLocalization.Text(EAnnotationText.FollowBuildDefaultPlatforms),
+                settings.followBuildDefaultPlatforms, v => settings.followBuildDefaultPlatforms = v,
+                EditorAnnotationLocalization.Text(EAnnotationText.FollowBuildDefaultPlatformsTooltip));
+            changed |= IntField(nameof(AnnotationSettings.globalMaxTextureSize), EditorAnnotationLocalization.Text(EAnnotationText.GlobalMaxTextureSize),
+                settings.globalMaxTextureSize, v => settings.globalMaxTextureSize = v, EditorAnnotationLocalization.Text(EAnnotationText.GlobalMaxTextureSizeTooltip));
+            changed |= StringField(nameof(AnnotationSettings.pcPlatform), EditorAnnotationLocalization.Text(EAnnotationText.PcPlatform),
+                settings.pcPlatform, v => settings.pcPlatform = v);
+
+            Section(EditorAnnotationLocalization.Text(EAnnotationText.NamingSection));
+            changed |= StringListField(nameof(AnnotationSettings.bgmKeywords), EditorAnnotationLocalization.Text(EAnnotationText.BgmKeywords),
+                settings.bgmKeywords, v => settings.bgmKeywords = v);
+            changed |= StringListField(nameof(AnnotationSettings.voiceKeywords), EditorAnnotationLocalization.Text(EAnnotationText.VoiceKeywords),
+                settings.voiceKeywords, v => settings.voiceKeywords = v);
+            changed |= StringField(nameof(AnnotationSettings.loopSuffix), EditorAnnotationLocalization.Text(EAnnotationText.LoopSuffix),
+                settings.loopSuffix, v => settings.loopSuffix = v, EditorAnnotationLocalization.Text(EAnnotationText.LoopSuffixTooltip));
+
+            if (changed)
+                AnnotationSettings.Save();
         }
 
         private static void Section(string title)
@@ -116,6 +157,44 @@ namespace Lin.Editor.Annotation.Settings
             if (value == current) return false;
             apply(value);
             return true;
+        }
+
+        /// <summary>字符串数组一行一格地编辑。null（老文件缺这个字段）先当空表，点一次"添加"即成表。</summary>
+        private static bool StringListField(string key, string label, string[] current, System.Action<string[]> apply, string tooltip = null)
+        {
+            EditorGUILayout.LabelField(new GUIContent(label, tooltip ?? GetTooltip(key)));
+
+            var items = new List<string>(current ?? new string[0]);
+            bool changed = false;
+            for (int i = 0; i < items.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                string item = EditorGUILayout.TextField(items[i]);
+                if (item != items[i])
+                {
+                    items[i] = item;
+                    changed = true;
+                }
+
+                if (GUILayout.Button(EditorAnnotationLocalization.Text(EAnnotationText.RemoveMarker), GUILayout.Width(72f)))
+                {
+                    items.RemoveAt(i);
+                    changed = true;
+                    i--;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (GUILayout.Button(EditorAnnotationLocalization.Text(EAnnotationText.AddItem)))
+            {
+                items.Add(string.Empty);
+                changed = true;
+            }
+
+            if (changed)
+                apply(items.ToArray());
+
+            return changed;
         }
 
         private static bool DescriptionMarkersList()
@@ -157,17 +236,25 @@ namespace Lin.Editor.Annotation.Settings
             return changed;
         }
 
-        private static bool BoolField(string key, string label, bool current, System.Action<bool> apply)
+        private static bool BoolField(string key, string label, bool current, System.Action<bool> apply, string tooltip = null)
         {
-            var value = EditorGUILayout.Toggle(new GUIContent(label, GetTooltip(key)), current);
+            var value = EditorGUILayout.Toggle(new GUIContent(label, tooltip ?? GetTooltip(key)), current);
             if (value == current) return false;
             apply(value);
             return true;
         }
 
-        private static bool IntField(string key, string label, int current, System.Action<int> apply)
+        private static bool StringField(string key, string label, string current, System.Action<string> apply, string tooltip = null)
         {
-            var value = EditorGUILayout.IntField(new GUIContent(label, GetTooltip(key)), current);
+            var value = EditorGUILayout.TextField(new GUIContent(label, tooltip ?? GetTooltip(key)), current ?? string.Empty);
+            if (value == current) return false;
+            apply(value);
+            return true;
+        }
+
+        private static bool IntField(string key, string label, int current, System.Action<int> apply, string tooltip = null)
+        {
+            var value = EditorGUILayout.IntField(new GUIContent(label, tooltip ?? GetTooltip(key)), current);
             if (value == current) return false;
             apply(value);
             return true;
@@ -249,7 +336,26 @@ namespace Lin.Editor.Annotation.Settings
         ToolbarAnnotation,
         ToolbarAnnotationTooltip,
         TimeScaleLabel,
-        TimeScaleTooltip
+        TimeScaleTooltip,
+        ImportSection,
+        ImportEnabled,
+        ImportEnabledTooltip,
+        ImportVideoEnabled,
+        ImportVideoEnabledTooltip,
+        PlatformSection,
+        OverriddenPlatforms,
+        OverriddenPlatformsTooltip,
+        FollowBuildDefaultPlatforms,
+        FollowBuildDefaultPlatformsTooltip,
+        GlobalMaxTextureSize,
+        GlobalMaxTextureSizeTooltip,
+        PcPlatform,
+        NamingSection,
+        BgmKeywords,
+        VoiceKeywords,
+        LoopSuffix,
+        LoopSuffixTooltip,
+        AddItem
     }
 
     internal static class EditorAnnotationLocalization
@@ -296,7 +402,26 @@ namespace Lin.Editor.Annotation.Settings
                 { EAnnotationText.ToolbarAnnotation, ("注释", "Note") },
                 { EAnnotationText.ToolbarAnnotationTooltip, ("打开注释设置", "Open annotation settings") },
                 { EAnnotationText.TimeScaleLabel, ("时间倍率", "Time Scale") },
-                { EAnnotationText.TimeScaleTooltip, ("TimeScale控制器", "Time Scale Controller") }
+                { EAnnotationText.TimeScaleTooltip, ("TimeScale控制器", "Time Scale Controller") },
+                { EAnnotationText.ImportSection, ("导入策略（原 com.lin.editor-asset-import）", "Import policy (was com.lin.editor-asset-import)") },
+                { EAnnotationText.ImportEnabled, ("启用导入自动处理", "Apply import settings automatically") },
+                { EAnnotationText.ImportEnabledTooltip, ("关闭时三个导入回调直接返回，不动任何 importer。装包后默认关闭。", "When off, the import callbacks return immediately and touch no importer. Off by default after install.") },
+                { EAnnotationText.ImportVideoEnabled, ("启用视频转码", "Enable video transcoding") },
+                { EAnnotationText.ImportVideoEnabledTooltip, ("转码在导入期执行，高分辨率源可能耗时数小时。", "Transcoding runs during import; high-resolution sources can take hours.") },
+                { EAnnotationText.PlatformSection, ("平台分组", "Platform groups") },
+                { EAnnotationText.OverriddenPlatforms, ("覆盖平台", "Overridden platforms") },
+                { EAnnotationText.OverriddenPlatformsTooltip, ("逐个写 SetPlatformTextureSettings 覆盖。Web 目标不要放进来：建了覆盖会让桌面浏览器拿不到 BC 系列。", "Writes a SetPlatformTextureSettings override for each entry. Keep web targets out: an override leaves desktop browsers without the BC family.") },
+                { EAnnotationText.FollowBuildDefaultPlatforms, ("跟随构建默认", "Follow build defaults") },
+                { EAnnotationText.FollowBuildDefaultPlatformsTooltip, ("不建平台覆盖，格式由引擎按构建目标选；尺寸走下面的全局上限。", "No platform override; the engine picks the format per build target, and size is capped by the global maximum below.") },
+                { EAnnotationText.GlobalMaxTextureSize, ("全局纹理上限", "Global max texture size") },
+                { EAnnotationText.GlobalMaxTextureSizeTooltip, ("作用于未覆盖的平台，也是 Web / 小游戏的尺寸闸门。", "Applies to platforms without an override, and is the size gate for web and mini-game targets.") },
+                { EAnnotationText.PcPlatform, ("PC 平台名", "PC platform name") },
+                { EAnnotationText.NamingSection, ("命名约定", "Naming conventions") },
+                { EAnnotationText.BgmKeywords, ("BGM 关键字", "BGM keywords") },
+                { EAnnotationText.VoiceKeywords, ("语音关键字", "Voice keywords") },
+                { EAnnotationText.LoopSuffix, ("循环后缀", "Loop suffix") },
+                { EAnnotationText.LoopSuffixTooltip, ("clip 名以此结尾则 loopTime = true。", "A clip whose name ends with this gets loopTime = true.") },
+                { EAnnotationText.AddItem, ("添加", "Add") }
             };
 
         public static event System.Action LanguageChanged;
